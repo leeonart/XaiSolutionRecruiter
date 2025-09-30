@@ -1,0 +1,31 @@
+AI Job Platform Deployment Package
+==================================
+
+Package Name: ai-job-platform-deployment-20250923_065718
+Created: Tue Sep 23 06:57:30 CDT 2025
+Size: 39M
+
+Contents:
+- Complete AI Job Platform application
+- Production Docker configuration
+- Deployment scripts and documentation
+- Environment configuration templates
+- Security and monitoring setup
+
+Files in package:
+- ai-job-platform-deployment-20250923_065718.tar.gz (main application)
+- DEPLOYMENT_INSTRUCTIONS.txt (quick start guide)
+- deploy-package.sh (simple deployment script)
+- PACKAGE_INFO.txt (this file)
+
+System Requirements:
+- Ubuntu 20.04+ or similar Linux distribution
+- Docker and Docker Compose
+- 2GB+ RAM
+- 10GB+ disk space
+- Internet connection for API access
+
+For detailed deployment instructions, extract the package and see:
+- DEPLOYMENT_GUIDE.md
+- README_DEPLOYMENT.md
+-templates

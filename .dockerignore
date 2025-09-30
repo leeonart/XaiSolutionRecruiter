@@ -1,0 +1,14 @@
+certbot/
+node_modules/
+.git/
+*.log
+.env
+.env.local
+.env.production
+dist/
+build/
+coverage/
+.nyc_output/
+.cache/
+.DS_Store
+Thumbs.db

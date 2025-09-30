@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  # Use shared backend and database from production
+  # No separate dev-db or dev-backend - use prod-db and prod-backend
+
+  # Development Frontend
+  dev-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend.dev
+    ports:
+      - "3001:3000"  # Different port to avoid conflict
+    depends_on:
+      - prod-backend  # Use production backend
+    environment:
+      VITE_API_URL: http://localhost:8000  # Use production backend port
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev -- --host 0.0.0.0 --port 3000
+    networks:
+      - dev-network
+      - prod-network  # Connect to production network
+
+  # Development Nginx
+  dev-nginx:
+    image: nginx:alpine
+    ports:
+      - "8080:80"  # Different port to avoid conflict with production
+      - "8443:443"
+    volumes:
+      - ./nginx.dev.parallel.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - prod-backend  # Use production backend
+      - dev-frontend
+    command: nginx -g 'daemon off;'
+    networks:
+      - dev-network
+      - prod-network  # Connect to production network
+
+networks:
+  dev-network:
+    driver: bridge
+  prod-network:
+    external: true

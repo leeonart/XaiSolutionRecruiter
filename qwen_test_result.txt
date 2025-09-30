@@ -1,0 +1,46 @@
+Testing Qwen API integration...
+API Key: sk-2b...
+Base URL: https://dashscope-intl.aliyuncs.com/compatible-mode/v1
+Model: qwen3-coder-plus
+Creating OpenAI client with Qwen configuration...
+OpenAI client created successfully.
+Sending request to Qwen API...
+
+API Response:
+Model: qwen3-coder-plus
+Content: Hello! It's nice to meet you! How can I help you today?
+
+Full Response:
+{
+  "id": "chatcmpl-291c6d25-ca7f-9fbe-a9a3-9c37cd5d4ed6",
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "content": "Hello! It's nice to meet you! How can I help you today?",
+        "refusal": null,
+        "role": "assistant",
+        "annotations": null,
+        "audio": null,
+        "function_call": null,
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1753292666,
+  "model": "qwen3-coder-plus",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": null,
+  "usage": {
+    "completion_tokens": 16,
+    "prompt_tokens": 22,
+    "total_tokens": 38,
+    "completion_tokens_details": null,
+    "prompt_tokens_details": null
+  }
+}
+
+Qwen API integration test successful!

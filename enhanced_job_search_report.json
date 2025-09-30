@@ -1,0 +1,1906 @@
+{
+  "scan_timestamp": "/home/leemax/projects/NewCompleteWorking",
+  "total_unique_jobs": 97,
+  "total_files": 317,
+  "jobs_by_range": {
+    "2": [
+      "20250"
+    ],
+    "8": [
+      "8706",
+      "8712",
+      "8280",
+      "8727",
+      "8695",
+      "8714",
+      "8705",
+      "8560",
+      "8691",
+      "8487",
+      "8722",
+      "8735",
+      "8738",
+      "8665",
+      "8747",
+      "8685",
+      "8763",
+      "8007",
+      "8728",
+      "8730",
+      "8731",
+      "8752",
+      "8704",
+      "8724",
+      "8567",
+      "8749",
+      "8707",
+      "8746",
+      "8475",
+      "8756",
+      "8734",
+      "8588",
+      "8715",
+      "8733",
+      "8717",
+      "8697",
+      "8743",
+      "8757",
+      "8741",
+      "8650",
+      "8469",
+      "8703",
+      "8659",
+      "8329",
+      "8405",
+      "8760",
+      "8604",
+      "8736",
+      "8708",
+      "8664",
+      "8595",
+      "8762",
+      "8300",
+      "8629",
+      "8682",
+      "8748",
+      "8739",
+      "8299",
+      "8684",
+      "8652",
+      "8761",
+      "8759",
+      "8754",
+      "8360",
+      "8729",
+      "8592",
+      "8626",
+      "8481",
+      "8723",
+      "8585",
+      "8440",
+      "8632",
+      "8744",
+      "8701",
+      "8590",
+      "8563",
+      "8679",
+      "8745",
+      "8720",
+      "8740",
+      "8758",
+      "8673",
+      "8755",
+      "8750",
+      "8751",
+      "8692",
+      "8737",
+      "8690",
+      "8693",
+      "8742",
+      "8569",
+      "8579",
+      "8537",
+      "8683"
+    ],
+    "7": [
+      "7430",
+      "7785"
+    ]
+  },
+  "pattern_mismatches": {},
+  "missing_from_db": [
+    "20250",
+    "8487",
+    "8665",
+    "8475"
+  ],
+  "missing_from_files": [
+    "8724.1",
+    "8299.2",
+    "8487.1",
+    "8665.1",
+    "8475.1",
+    "8405.2"
+  ],
+  "all_jobs": {
+    "20250": [
+      [
+        "20250",
+        "/home/leemax/projects/NewCompleteWorking/data/MTB/MasterTrackingBoard_20250916_214735.csv",
+        []
+      ],
+      [
+        "20250",
+        "/home/leemax/projects/NewCompleteWorking/data/MTB/jobids_20250919_180600.txt",
+        []
+      ],
+      [
+        "20250",
+        "/home/leemax/projects/NewCompleteWorking/data/MTB/MasterTrackingBoard_20250917_194530.csv",
+        []
+      ],
+      [
+        "20250",
+        "/home/leemax/projects/NewCompleteWorking/data/MTB/MasterTrackingBoard_20250919_180600.csv",
+        []
+      ],
+      [
+        "20250",
+        "/home/leemax/projects/NewCompleteWorking/data/MTB/MasterTrackingBoard_20250917_194308.csv",
+        []
+      ],
+      [
+        "20250",
+        "/home/leemax/projects/NewCompleteWorking/data/MTB/jobids_20250917_194530.txt",
+        []
+      ],
+      [
+        "20250",
+        "/home/leemax/projects/NewCompleteWorking/data/MTB/jobids_20250917_194308.txt",
+        []
+      ],
+      [
+        "20250",
+        "/home/leemax/projects/NewCompleteWorking/data/MTB/jobids_20250916_214735.txt",
+        []
+      ],
+      [
+        "20250",
+        "/home/leemax/projects/NewCompleteWorking/data/json_output/jobs_20250917_final_optimized.json",
+        []
+      ],
+      [
+        "20250",
+        "/home/leemax/projects/NewCompleteWorking/data/json_output/jobs_20250919_final_optimized.json",
+        []
+      ],
+      [
+        "20250",
+        "/home/leemax/projects/NewCompleteWorking/data/json_output/jobs_20250916_final_optimized.json",
+        []
+      ],
+      [
+        "20250",
+        "/home/leemax/projects/NewCompleteWorking/data/output/jobs_20250917_optimized.json",
+        []
+      ],
+      [
+        "20250",
+        "/home/leemax/projects/NewCompleteWorking/data/output/jobs_20250916_optimized.json",
+        []
+      ],
+      [
+        "20250",
+        "/home/leemax/projects/NewCompleteWorking/data/output/jobs_20250919_optimized.json",
+        []
+      ],
+      [
+        "20250",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/drive-download-20250919T193227Z-1-001.zip:Zone.Identifier",
+        []
+      ],
+      [
+        "20250",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/drive-download-20250919T193227Z-1-001.zip",
+        []
+      ],
+      [
+        "20250",
+        "/home/leemax/projects/NewCompleteWorking/data/MTB/archive/MasterTrackingBoard_20250919_180600_archived.csv",
+        []
+      ],
+      [
+        "20250",
+        "/home/leemax/projects/NewCompleteWorking/data/MTB/archive/MasterTrackingBoard_20250917_194308_archived.csv",
+        []
+      ],
+      [
+        "20250",
+        "/home/leemax/projects/NewCompleteWorking/data/MTB/archive/jobidlist_20250919_180600_archived.txt",
+        []
+      ],
+      [
+        "20250",
+        "/home/leemax/projects/NewCompleteWorking/data/MTB/archive/MasterTrackingBoard_20250917_194530_archived.csv",
+        []
+      ],
+      [
+        "20250",
+        "/home/leemax/projects/NewCompleteWorking/data/MTB/archive/jobidlist_20250917_194308_archived.txt",
+        []
+      ],
+      [
+        "20250",
+        "/home/leemax/projects/NewCompleteWorking/data/MTB/archive/jobidlist_20250917_194530_archived.txt",
+        []
+      ]
+    ],
+    "8706": [
+      [
+        "8706",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8706_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8706",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8706 NOTES.docx",
+        []
+      ],
+      [
+        "8706",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8706 Allied Packaging Field Service Engineer Phoenix AZ.docx",
+        []
+      ],
+      [
+        "8706",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8706 Allied Packaging Field Service Engineer Recruiter Interview Questions.docx",
+        []
+      ]
+    ],
+    "8712": [
+      [
+        "8712",
+        "/home/leemax/projects/NewCompleteWorking/data/output/job_error_details_8712.txt",
+        []
+      ]
+    ],
+    "7430": [
+      [
+        "7430",
+        "/home/leemax/projects/NewCompleteWorking/data/output/7430_ai_response_debug.txt",
+        []
+      ],
+      [
+        "7430",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/7430 Eagle Materials Reliability Engineer Fairborn, OH 45385.docx",
+        []
+      ],
+      [
+        "7430",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/7430 NOTES.docx",
+        []
+      ]
+    ],
+    "8280": [
+      [
+        "8280",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8280_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8280",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8280 Buzzi Maintenance Engineer_Reliability Engineer Festus MO.docx",
+        []
+      ],
+      [
+        "8280",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8280 NOTES 8280.docx",
+        []
+      ]
+    ],
+    "8727": [
+      [
+        "8727",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8727_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8727",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8727 NOTES 8727.docx",
+        []
+      ],
+      [
+        "8727",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8727 Titan Cement Reliability Manager Roanoke VA.docx",
+        []
+      ]
+    ],
+    "8695": [
+      [
+        "8695",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8695_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8695",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8695 NOTES.docx",
+        []
+      ],
+      [
+        "8695",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8695 Titan Maintenance Manager Jacksonville, FL.docx",
+        []
+      ]
+    ],
+    "8714": [
+      [
+        "8714",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8714_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8714",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8714 NOTES 8714.docx",
+        []
+      ],
+      [
+        "8714",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8714 MTI (Minerals Technologies Inc) Production & Maintenance Supervisor - 2nd Shift Adams MA.docx",
+        []
+      ]
+    ],
+    "8705": [
+      [
+        "8705",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8705_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8705",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8705_quality_report.txt",
+        []
+      ],
+      [
+        "8705",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8705 NOTES.docx",
+        []
+      ],
+      [
+        "8705",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8705 Titan Ready Mix Operations Manager  RMX Tampa FL.docx",
+        []
+      ]
+    ],
+    "8560": [
+      [
+        "8560",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8560_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8560",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8560 GCC Process Engineer - Senior Odessa TX.docx",
+        []
+      ],
+      [
+        "8560",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8560 NOTES 8560.docx",
+        []
+      ]
+    ],
+    "8691": [
+      [
+        "8691",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8691_quality_report.txt",
+        []
+      ],
+      [
+        "8691",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8691_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8691",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8691 Central Plains Cement Plant Manager Tulsa OK.docx",
+        []
+      ],
+      [
+        "8691",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8691 Notes 8691.docx",
+        []
+      ]
+    ],
+    "8487": [
+      [
+        "8487",
+        "/home/leemax/projects/NewCompleteWorking/data/output/job_error_details_8487.1.txt",
+        []
+      ]
+    ],
+    "8722": [
+      [
+        "8722",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8722_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8722",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8722 Heidelberg Plant Manager Glen Mills PA.docx",
+        []
+      ],
+      [
+        "8722",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8722 NOTES 8722.docx",
+        []
+      ]
+    ],
+    "8735": [
+      [
+        "8735",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8735_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8735",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8735 Carmeuse Lime Engineering Project Manager (Automation) Pittsburgh PA.docx",
+        []
+      ],
+      [
+        "8735",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8735 NOTES 8735.docx",
+        []
+      ]
+    ],
+    "8738": [
+      [
+        "8738",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8738_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8738",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8738_quality_report.txt",
+        []
+      ],
+      [
+        "8738",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8738 NOTES 8738.docx",
+        []
+      ]
+    ],
+    "8665": [
+      [
+        "8665",
+        "/home/leemax/projects/NewCompleteWorking/data/output/job_error_details_8665.1.txt",
+        []
+      ]
+    ],
+    "8747": [
+      [
+        "8747",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8747_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8747",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8747 Buzzi Air Compressor Tech Maryneal TX.docx",
+        []
+      ],
+      [
+        "8747",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8747 NOTES 8747.docx",
+        []
+      ]
+    ],
+    "8685": [
+      [
+        "8685",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8685_quality_report.txt",
+        []
+      ],
+      [
+        "8685",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8685_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8685",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8685 Buzzi Market Manager Chattanooga, TN.pdf",
+        []
+      ],
+      [
+        "8685",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8685 Notes 8685 .docx",
+        []
+      ]
+    ],
+    "8763": [
+      [
+        "8763",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8763_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8763",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8763 NOTES 8763.docx",
+        []
+      ],
+      [
+        "8763",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8763 Buzzi Maintenance Planner - CONFIDENTIAL Festus MO.docx",
+        []
+      ]
+    ],
+    "8007": [
+      [
+        "8007",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8007_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8007",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8007_quality_report.txt",
+        []
+      ],
+      [
+        "8007",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8007 Eagle, Mountain Cement I&E Technician Laramie WY.docx",
+        []
+      ],
+      [
+        "8007",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8007 NOTES 8007.docx",
+        []
+      ]
+    ],
+    "8728": [
+      [
+        "8728",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8728_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8728",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8728 NOTES 8728.docx",
+        []
+      ],
+      [
+        "8728",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8728 Allied Packaging Corp Field Service Engineer Minneapolis MN.docx",
+        []
+      ]
+    ],
+    "8730": [
+      [
+        "8730",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8730_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8730",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8730 NOTES 8730.docx",
+        []
+      ],
+      [
+        "8730",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8730 GCC Control Room Leader Odessa TX.docx",
+        []
+      ]
+    ],
+    "8731": [
+      [
+        "8731",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8731_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8731",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8731 NOTES 8731.docx",
+        []
+      ],
+      [
+        "8731",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8731 MTI (Minerals Technologies Inc) Maintenance Technician York PA.docx",
+        []
+      ]
+    ],
+    "8752": [
+      [
+        "8752",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8752_quality_report.txt",
+        []
+      ],
+      [
+        "8752",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8752_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8752",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8752 Buzzi Safety Specialist Pryor OK.docx",
+        []
+      ],
+      [
+        "8752",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8752 NOTES.docx",
+        []
+      ]
+    ],
+    "8704": [
+      [
+        "8704",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8704_quality_report.txt",
+        []
+      ],
+      [
+        "8704",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8704_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8704",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8704 NOTES 8704.docx",
+        []
+      ],
+      [
+        "8704",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8704 Titan Ready Mix Maintenance Manager Tampa FL.docx",
+        []
+      ]
+    ],
+    "8724": [
+      [
+        "8724",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8724_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8724",
+        "/home/leemax/projects/NewCompleteWorking/data/output/job_error_details_8724.1.txt",
+        []
+      ],
+      [
+        "8724",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8724 Buzzi Maintenance Supervisor Maryneal TX.docx",
+        []
+      ],
+      [
+        "8724",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8724 NOTES 8724.docx",
+        []
+      ]
+    ],
+    "8567": [
+      [
+        "8567",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8567_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8567",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8567 NOTES 8567.docx",
+        []
+      ],
+      [
+        "8567",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8567 Holcim Area Operations Manager Presque Isle MI.docx",
+        []
+      ]
+    ],
+    "8749": [
+      [
+        "8749",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8749_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8749",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8749 NOTES 8749.docx",
+        []
+      ],
+      [
+        "8749",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8749 Amrize Area Sales Manager Dundee MI.docx",
+        []
+      ]
+    ],
+    "8707": [
+      [
+        "8707",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8707_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8707",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8707 Capitol Aggregates Quality Control Manager San Antonio TX.docx",
+        []
+      ],
+      [
+        "8707",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8707 NOTES.docx",
+        []
+      ]
+    ],
+    "8746": [
+      [
+        "8746",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8746_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8746",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8746 NOTES 8746.docx",
+        []
+      ],
+      [
+        "8746",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8746 Buzzi Maintenance Planner Maryneal TX.docx",
+        []
+      ]
+    ],
+    "8475": [
+      [
+        "8475",
+        "/home/leemax/projects/NewCompleteWorking/data/output/job_error_details_8475.1.txt",
+        []
+      ]
+    ],
+    "8756": [
+      [
+        "8756",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8756_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8756",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8756 Titan Safety Manager Medley FL.docx",
+        []
+      ],
+      [
+        "8756",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8756 NOTES 8756.docx",
+        []
+      ]
+    ],
+    "8734": [
+      [
+        "8734",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8734_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8734",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8734 Capitol Aggregates Environmental Director San Antonio TX.docx",
+        []
+      ],
+      [
+        "8734",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8734 NOTES 8734.docx",
+        []
+      ]
+    ],
+    "8588": [
+      [
+        "8588",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8588_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8588",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8588_quality_report.txt",
+        []
+      ],
+      [
+        "8588",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8588 Eagle, Mountain Cement  Mechanic Technician Laramie WY.docx",
+        []
+      ],
+      [
+        "8588",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8588 NOTES 8588.docx",
+        []
+      ]
+    ],
+    "8715": [
+      [
+        "8715",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8715_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8715",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8715 NOTES 8715.docx",
+        []
+      ],
+      [
+        "8715",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8715 MTI (Minerals Technologies Inc) Production & Maintenance Supervisor - 3rd Shift Adams MA.docx",
+        []
+      ]
+    ],
+    "8733": [
+      [
+        "8733",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8733_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8733",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8733_quality_report.txt",
+        []
+      ],
+      [
+        "8733",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8733 NOTES 8733.docx",
+        []
+      ]
+    ],
+    "8717": [
+      [
+        "8717",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8717_quality_report.txt",
+        []
+      ],
+      [
+        "8717",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8717_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8717",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8717 Notes 8717.docx",
+        []
+      ],
+      [
+        "8717",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8717 Premier Magnesia Customer Support Specialist Waynesville NC.docx",
+        []
+      ]
+    ],
+    "8697": [
+      [
+        "8697",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8697_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8697",
+        "/home/leemax/projects/NewCompleteWorking/data/output/job_error_details_8697.txt",
+        []
+      ],
+      [
+        "8697",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8697 Capitol Aggregates Maintenance Manager - CONFIDENTIAL San Antonio, TX.docx",
+        []
+      ],
+      [
+        "8697",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8697 Capitol Aggregates Maintenance Manager - CONFIDENTIAL San Antonio, TX.docx:Zone.Identifier",
+        []
+      ],
+      [
+        "8697",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/NOTES 8697.docx",
+        []
+      ],
+      [
+        "8697",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/NOTES 8697.docx:Zone.Identifier",
+        []
+      ]
+    ],
+    "8743": [
+      [
+        "8743",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8743_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8743",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8743 GCC Control Room Leader Pueblo CO.docx",
+        []
+      ],
+      [
+        "8743",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8743 NOTES 8743.docx",
+        []
+      ]
+    ],
+    "8757": [
+      [
+        "8757",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8757_quality_report.txt",
+        []
+      ],
+      [
+        "8757",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8757_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8757",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8757 Buzzi Environmental Engineer Maryneal TX.docx",
+        []
+      ],
+      [
+        "8757",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8757 NOTES.docx",
+        []
+      ]
+    ],
+    "8741": [
+      [
+        "8741",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8741_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8741",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8741_quality_report.txt",
+        []
+      ],
+      [
+        "8741",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8741 NOTES 8741.docx",
+        []
+      ]
+    ],
+    "8650": [
+      [
+        "8650",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8650_quality_report.txt",
+        []
+      ],
+      [
+        "8650",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8650_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8650",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8650 NOTES 8650.docx",
+        []
+      ],
+      [
+        "8650",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8650 Premier Magnesia HR Coordinator Gabbs NV.docx",
+        []
+      ]
+    ],
+    "8469": [
+      [
+        "8469",
+        "/home/leemax/projects/NewCompleteWorking/data/output/job_error_details_8469.txt",
+        []
+      ]
+    ],
+    "8703": [
+      [
+        "8703",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8703_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8703",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8703 NOTES 8703.docx",
+        []
+      ],
+      [
+        "8703",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8703 GCC Senior Control Room Leader Odessa TX.docx",
+        []
+      ]
+    ],
+    "8659": [
+      [
+        "8659",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8659_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8659",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8659 NOTES.docx",
+        []
+      ],
+      [
+        "8659",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8659_ Summit Materials - Site Manager - Hannibal, MO.docx",
+        []
+      ]
+    ],
+    "8329": [
+      [
+        "8329",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8329_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8329",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8329 Holcim Electrical Manager Holly Hill SC.docx",
+        []
+      ],
+      [
+        "8329",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8329 NOTES 8329.docx",
+        []
+      ]
+    ],
+    "8405": [
+      [
+        "8405",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8405_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8405",
+        "/home/leemax/projects/NewCompleteWorking/data/output/job_error_details_8405.2.txt",
+        []
+      ],
+      [
+        "8405",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8405 Premier Magnesia Electrician Gabbs NV.docx",
+        []
+      ],
+      [
+        "8405",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8405 NOTES 8405.docx",
+        []
+      ]
+    ],
+    "8760": [
+      [
+        "8760",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8760_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8760",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8760 Allied Packaging Field Service Engineer Atlanta GA.docx",
+        []
+      ],
+      [
+        "8760",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8760 NOTES 8760.docx",
+        []
+      ]
+    ],
+    "8604": [
+      [
+        "8604",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8604_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8604",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8604 Carmeuse Lime Maintenance Manager Clear Brook VA.docx",
+        []
+      ],
+      [
+        "8604",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8604 NOTES.docx",
+        []
+      ]
+    ],
+    "8736": [
+      [
+        "8736",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8736_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8736",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8736 Titan Plant Manager Roanoke VA.docx",
+        []
+      ],
+      [
+        "8736",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8736 NOTES 8736.docx",
+        []
+      ]
+    ],
+    "8708": [
+      [
+        "8708",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8708_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8708",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8708_quality_report.txt",
+        []
+      ],
+      [
+        "8708",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8708 NOTES 8708.docx",
+        []
+      ],
+      [
+        "8708",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8708 Nevada Cement Process Engineer Fernley, NV.docx",
+        []
+      ]
+    ],
+    "8664": [
+      [
+        "8664",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8664_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8664",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8664 NOTES.docx",
+        []
+      ],
+      [
+        "8664",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8664_ Buzzi Unicem USA - Process Engineer - Maryneal, TX.docx",
+        []
+      ]
+    ],
+    "7785": [
+      [
+        "7785",
+        "/home/leemax/projects/NewCompleteWorking/data/output/7785_ai_response_debug.txt",
+        []
+      ],
+      [
+        "7785",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/7785 NOTES.docx",
+        []
+      ],
+      [
+        "7785",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/7785 Buzzi Electrical Supervisor (CONFIDENTIAL) Stockertown PA.docx",
+        []
+      ]
+    ],
+    "8595": [
+      [
+        "8595",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8595_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8595",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8595 NOTES.docx",
+        []
+      ],
+      [
+        "8595",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8595_ Buzzi - Environmental Engineer (Confidential) in Pryor OK.docx",
+        []
+      ]
+    ],
+    "8762": [
+      [
+        "8762",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8762_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8762",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8762 NOTES 8762.docx",
+        []
+      ],
+      [
+        "8762",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8762 National Cement Yard Supervisor Ragland AL.docx",
+        []
+      ]
+    ],
+    "8300": [
+      [
+        "8300",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8300_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8300",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8300 NOTES 8300.docx",
+        []
+      ],
+      [
+        "8300",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8300 The Concrete Company Pit Supervisor Fortson GA.docx",
+        []
+      ]
+    ],
+    "8629": [
+      [
+        "8629",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8629_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8629",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8629 NOTES 8629.docx",
+        []
+      ],
+      [
+        "8629",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8629_ Premier Magnesia - Engineering and Maintenance Manager in Waynesville, NC.docx",
+        []
+      ]
+    ],
+    "8682": [
+      [
+        "8682",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8682_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8682",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8682 Eagle, Central Plains Cement Optimization Manager Sugar Creek, MO.docx",
+        []
+      ],
+      [
+        "8682",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8682 NOTES.docx",
+        []
+      ]
+    ],
+    "8748": [
+      [
+        "8748",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8748_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8748",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8748_quality_report.txt",
+        []
+      ],
+      [
+        "8748",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8748 NOTES 8748.docx",
+        []
+      ]
+    ],
+    "8739": [
+      [
+        "8739",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8739_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8739",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8739 NOTES 8739.docx",
+        []
+      ],
+      [
+        "8739",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8739 Capitol Aggregates Shift Supervisor San Antonio TX.docx",
+        []
+      ]
+    ],
+    "8299": [
+      [
+        "8299",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8299_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8299",
+        "/home/leemax/projects/NewCompleteWorking/data/output/job_error_details_8299.2.txt",
+        []
+      ],
+      [
+        "8299",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8299_quality_report.txt",
+        []
+      ],
+      [
+        "8299",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8299 The Concrete Company Maintenance Technician Fortson GA.docx",
+        []
+      ],
+      [
+        "8299",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8299 NOTES 8299.docx",
+        []
+      ]
+    ],
+    "8684": [
+      [
+        "8684",
+        "/home/leemax/projects/NewCompleteWorking/data/output/job_error_details_8684.txt",
+        []
+      ]
+    ],
+    "8652": [
+      [
+        "8652",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8652_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8652",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8652_ Carmeuse - Health and Safety Specialist - Detroit, MI.docx",
+        []
+      ],
+      [
+        "8652",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8652 NOTES.docx",
+        []
+      ]
+    ],
+    "8761": [
+      [
+        "8761",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8761_quality_report.txt",
+        []
+      ],
+      [
+        "8761",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8761_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8761",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8761 Heidelberg Regional Quality Control Technical Manager - CONFIDENTIAL Redmond WA.docx",
+        []
+      ],
+      [
+        "8761",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8761 NOTES 8761.docx",
+        []
+      ]
+    ],
+    "8759": [
+      [
+        "8759",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8759_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8759",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8759 Allied Packaging Corp Sales Representative Atlanta GA.docx",
+        []
+      ],
+      [
+        "8759",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8759 NOTES 8759.docx",
+        []
+      ]
+    ],
+    "8754": [
+      [
+        "8754",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8754_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8754",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8754 NOTES 8754.docx",
+        []
+      ],
+      [
+        "8754",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8754 Ecocem Project Manager - Construction (CONFIDENTIAL) Dunkirk France.docx",
+        []
+      ]
+    ],
+    "8360": [
+      [
+        "8360",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8360_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8360",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8360 NOTES 8360.docx",
+        []
+      ],
+      [
+        "8360",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8360 Titan Production Manager Roanoke VA.docx",
+        []
+      ]
+    ],
+    "8729": [
+      [
+        "8729",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8729_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8729",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8729 IKD Director Of Safety Louisville KY.pdf",
+        []
+      ],
+      [
+        "8729",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8729 NOTES 8729.docx",
+        []
+      ]
+    ],
+    "8592": [
+      [
+        "8592",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8592_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8592",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8592 NOTES 8592.docx",
+        []
+      ],
+      [
+        "8592",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8592 Buzzi Maintenance Superintendent Pryor OK.docx",
+        []
+      ]
+    ],
+    "8626": [
+      [
+        "8626",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8626_quality_report.txt",
+        []
+      ],
+      [
+        "8626",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8626_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8626",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8626 NOTES.docx",
+        []
+      ],
+      [
+        "8626",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8626_ Morton Salt - Electrician (3rd Shift) in Rittman, OH.docx",
+        []
+      ]
+    ],
+    "8481": [
+      [
+        "8481",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8481_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8481",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8481 NOTES 8481.docx",
+        []
+      ],
+      [
+        "8481",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8481 Siboney Contracting Co.docx",
+        []
+      ]
+    ],
+    "8723": [
+      [
+        "8723",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8723_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8723",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8723 NOTES 8723.docx",
+        []
+      ],
+      [
+        "8723",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8723 Buzzi Automation Engineer Festus MO.docx",
+        []
+      ]
+    ],
+    "8585": [
+      [
+        "8585",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8585_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8585",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8585 Carmeuse Lime Engineering Project Manager Pittsburgh PA.docx",
+        []
+      ],
+      [
+        "8585",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8585 NOTES 8585.docx",
+        []
+      ]
+    ],
+    "8440": [
+      [
+        "8440",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8440_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8440",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8440 Ecocem Plant Engineer Dublin Ireland.docx",
+        []
+      ],
+      [
+        "8440",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8440 NOTES 8440.docx",
+        []
+      ]
+    ],
+    "8632": [
+      [
+        "8632",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8632_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8632",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8632 NOTES 8632.docx",
+        []
+      ],
+      [
+        "8632",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8632_ The Concrete Company - Maintenance Manager (Confidential) - Columbus, GA.docx",
+        []
+      ]
+    ],
+    "8744": [
+      [
+        "8744",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8744_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8744",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8744 NOTES 8744.docx",
+        []
+      ],
+      [
+        "8744",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8744 The Concrete Company Plant Manager Montgomery AL.docx",
+        []
+      ]
+    ],
+    "8701": [
+      [
+        "8701",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8701_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8701",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8701 Allied Packaging Sales Representative Los Angeles, CA.docx",
+        []
+      ],
+      [
+        "8701",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8701 NOTES.docx",
+        []
+      ]
+    ],
+    "8590": [
+      [
+        "8590",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8590_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8590",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8590 NOTES 8590.docx",
+        []
+      ],
+      [
+        "8590",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8590 Eagle, Mountain Cement  Automation Engineer Laramie WY.docx",
+        []
+      ]
+    ],
+    "8563": [
+      [
+        "8563",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8563_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8563",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8563 Carmeuse Lime Mechanical Engineer Pittsburgh PA.docx",
+        []
+      ],
+      [
+        "8563",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8563 NOTES 8563.docx",
+        []
+      ]
+    ],
+    "8679": [
+      [
+        "8679",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8679_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8679",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8679 Notes 8679.docx",
+        []
+      ],
+      [
+        "8679",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8679 Lafarge, Canada  Engineering Manager Mississauga, ON.docx",
+        []
+      ]
+    ],
+    "8745": [
+      [
+        "8745",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8745_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8745",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8745 Mitsubishi Cement HR Manager Lucerne Valley CA.docx",
+        []
+      ],
+      [
+        "8745",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8745 NOTES 8745.docx",
+        []
+      ]
+    ],
+    "8720": [
+      [
+        "8720",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8720_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8720",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8720 NOTES 8720.docx",
+        []
+      ],
+      [
+        "8720",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8720 Capitol Aggregates Purchasing Manager San Antonio TX.docx",
+        []
+      ]
+    ],
+    "8740": [
+      [
+        "8740",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8740_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8740",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8740 NOTES 8740.docx",
+        []
+      ],
+      [
+        "8740",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8740 Titan Operations Superintendent Medley FL.docx",
+        []
+      ]
+    ],
+    "8758": [
+      [
+        "8758",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8758_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8758",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8758 NOTES 8758.docx",
+        []
+      ],
+      [
+        "8758",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8758 Buzzi Maintenance Superintendent (Confidential) Maryneal TX.docx",
+        []
+      ]
+    ],
+    "8673": [
+      [
+        "8673",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8673_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8673",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8673 NOTES 8673.docx",
+        []
+      ],
+      [
+        "8673",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8673 Titan Electrical Maintenance Engineer Medley, FL.docx",
+        []
+      ]
+    ],
+    "8755": [
+      [
+        "8755",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8755_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8755",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8755 Heidelberg Assistant Plant Manager Lake Bridgeport TX.docx",
+        []
+      ],
+      [
+        "8755",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8755 NOTES 8755.docx",
+        []
+      ]
+    ],
+    "8750": [
+      [
+        "8750",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8750_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8750",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8750 Capitol Aggregates Control Room Operator - Experienced San Antonio TX.docx",
+        []
+      ],
+      [
+        "8750",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8750 NOTES.docx",
+        []
+      ]
+    ],
+    "8751": [
+      [
+        "8751",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8751_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8751",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8751 NOTES 8751.docx",
+        []
+      ],
+      [
+        "8751",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8751 Buzzi Reliability Engineer Chattanooga TN.docx",
+        []
+      ]
+    ],
+    "8692": [
+      [
+        "8692",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8692_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8692",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8692 Specialty Granules (SGI) Maintenance Supervisor Ione, CA.pdf",
+        []
+      ],
+      [
+        "8692",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8692 NOTES 8692.docx",
+        []
+      ]
+    ],
+    "8737": [
+      [
+        "8737",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8737_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8737",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8737 NOTES.docx",
+        []
+      ],
+      [
+        "8737",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8737 Eagle, Central Plains Cement Plant Manager Sugar Creek MO.docx",
+        []
+      ]
+    ],
+    "8690": [
+      [
+        "8690",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8690_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8690",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8690 NOTES.docx",
+        []
+      ],
+      [
+        "8690",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8690 MTI (Minerals Technologies Inc) Maintenance Manager Adams, MA.docx",
+        []
+      ]
+    ],
+    "8693": [
+      [
+        "8693",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8693_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8693",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8693 NOTES 8693.docx",
+        []
+      ],
+      [
+        "8693",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8693 Eagle, Central Plains Cement  Maintenance SYS Technician (Electrical Technician) Sugar Creek, MO.docx",
+        []
+      ]
+    ],
+    "8742": [
+      [
+        "8742",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8742_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8742",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8742 UNACEM, Tehachapi Cement Maintenance Manager Tehachapi CA.docx",
+        []
+      ],
+      [
+        "8742",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8742 NOTES 8742.docx",
+        []
+      ]
+    ],
+    "8569": [
+      [
+        "8569",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8569_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8569",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8569 NOTES 8569.docx",
+        []
+      ],
+      [
+        "8569",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8569 Titan Electrical Project Manager for Corporate Engineering Roanoke VA.docx",
+        []
+      ]
+    ],
+    "8579": [
+      [
+        "8579",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8579_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8579",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8579 GCC Maintenance Manager Tijeras NM.docx",
+        []
+      ],
+      [
+        "8579",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8579 NOTES 8579.docx",
+        []
+      ]
+    ],
+    "8537": [
+      [
+        "8537",
+        "/home/leemax/projects/NewCompleteWorking/data/output/8537_ai_response_debug.txt",
+        []
+      ],
+      [
+        "8537",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8537 NOTES 8537.docx",
+        []
+      ],
+      [
+        "8537",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8537 IKD District Manager (North East) Open (NE).docx",
+        []
+      ]
+    ],
+    "8683": [
+      [
+        "8683",
+        "/home/leemax/projects/NewCompleteWorking/data/jobs/8683 Eagle, Central Plains Cement Electrical Planner Sugar Creek MO.docx",
+        []
+      ]
+    ]
+  }
+}

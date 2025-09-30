@@ -1,0 +1,143 @@
+
+services:
+  # PostgreSQL Database (internal only)
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: ai_job_platform
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    expose:
+      - "5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+  # Backend API (internal only)
+  backend:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-password}@db:5432/ai_job_platform
+      GROK_API_KEY: ${GROK_API_KEY:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      DASHSCOPE_API_KEY: ${DASHSCOPE_API_KEY:-}
+      ZAI_API_KEY: ${ZAI_API_KEY:-}
+      DEFAULT_AI_AGENT: ${DEFAULT_AI_AGENT:-openai}
+      MAX_WORKERS: ${MAX_WORKERS:-8}
+      ENVIRONMENT: ${NODE_ENV:-development}
+    expose:
+      - "8000"
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      # Mount source code for hot reloading in development
+      - ./backend/app:/app/app
+      - ./modules:/app/modules
+      - ./config.py:/app/config.py
+      - ./credentials:/app/credentials
+      - ./data:/app/data:rw
+      - ./output:/app/output:rw
+      - ./temp:/app/temp:rw
+    command: >
+      sh -c "
+        if [ '${NODE_ENV:-development}' = 'production' ]; then
+          uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
+        else
+          uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+        fi
+      "
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Frontend (internal only, proxied by nginx)
+  frontend:
+    build: ./frontend
+    expose:
+      - "3000"
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      VITE_API_URL: ""
+      NODE_ENV: ${NODE_ENV:-development}
+    volumes:
+      # Mount source code for hot reloading in development
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+      - ./frontend/index.html:/app/index.html
+      - ./frontend/vite.config.ts:/app/vite.config.ts
+      - ./frontend/tsconfig.json:/app/tsconfig.json
+      - ./frontend/tsconfig.node.json:/app/tsconfig.node.json
+      - ./frontend/tailwind.config.js:/app/tailwind.config.js
+      - ./frontend/postcss.config.js:/app/postcss.config.js
+      # Exclude node_modules for performance
+      - /app/node_modules
+    command: >
+      sh -c "
+        if [ '${NODE_ENV:-development}' = 'production' ]; then
+          npm run build && npm run preview -- --host 0.0.0.0 --port 3000
+        else
+          npm run dev -- --host 0.0.0.0
+        fi
+      "
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # Use unified config that supports both dev and prod
+      - ./nginx.unified.conf:/etc/nginx/nginx.conf:ro
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    restart: unless-stopped
+    depends_on:
+      - backend
+      - frontend
+    command: nginx -g 'daemon off;'
+    environment:
+      - DOMAIN=${DOMAIN:-localhost}
+      - NODE_ENV=${NODE_ENV:-development}
+    networks:
+      - app-network
+
+  # Certbot for Let's Encrypt (auto-renewal)
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    entrypoint: /bin/sh
+    command: -c "trap exit TERM; while :; do sleep 12h & wait $${!}; certbot renew --quiet; done"
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

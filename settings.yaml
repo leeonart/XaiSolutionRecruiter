@@ -1,0 +1,11 @@
+client_config_backend: file
+save_credentials: True
+save_credentials_backend: file
+save_credentials_file: credentials/mycreds.txt
+
+oauth_scope:
+  - https://www.googleapis.com/auth/drive
+  - https://www.googleapis.com/auth/drive.file
+
+client_config:
+  client_secrets_file: credentials/client_secrets.json

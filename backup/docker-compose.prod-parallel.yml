@@ -1,0 +1,100 @@
+version: '3.8'
+
+services:
+  # Production Database
+  prod-db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: ai_job_platform_prod
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secure_password_change_me}
+    volumes:
+      - prod_postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"  # Keep standard port for production
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - prod-network
+
+  # Production Backend
+  prod-backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-secure_password_change_me}@prod-db:5432/ai_job_platform_prod
+      GROK_API_KEY: ${GROK_API_KEY:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      DASHSCOPE_API_KEY: ${DASHSCOPE_API_KEY:-}
+      ZAI_API_KEY: ${ZAI_API_KEY:-}
+      DEFAULT_AI_AGENT: ${DEFAULT_AI_AGENT:-openai}
+      MAX_WORKERS: 8
+    ports:
+      - "8000:8000"  # Standard production port
+    depends_on:
+      prod-db:
+        condition: service_healthy
+    volumes:
+      - ./data:/app/data:rw
+      - ./output:/app/output:rw
+      - ./temp:/app/temp:rw
+    restart: unless-stopped
+    networks:
+      - prod-network
+
+  # Production Frontend
+  prod-frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"  # Standard production port
+    depends_on:
+      - prod-backend
+    environment:
+      VITE_API_URL: https://xai.eastus.cloudapp.azure.com
+    restart: unless-stopped
+    networks:
+      - prod-network
+
+  # Production Nginx (Main Production)
+  prod-nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"   # Standard HTTP port
+      - "443:443" # Standard HTTPS port
+    volumes:
+      - ./nginx.prod.conf:/etc/nginx/nginx.conf:ro
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    depends_on:
+      - prod-backend
+      - prod-frontend
+    command: nginx -g 'daemon off;'
+    restart: unless-stopped
+    networks:
+      - prod-network
+
+  # Production Certbot
+  prod-certbot:
+    image: certbot/certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    entrypoint: /bin/sh
+    command: -c "trap exit TERM; while :; do sleep 12h & wait $${!}; certbot renew --quiet; done"
+    restart: unless-stopped
+    networks:
+      - prod-network
+
+volumes:
+  prod_postgres_data:
+
+networks:
+  prod-network:
+    driver: bridge

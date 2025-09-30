@@ -1,0 +1,10 @@
+Note on Job Processor Variants
+==============================
+
+This project contains multiple variants of job processor modules. To avoid confusion, please note the following:
+
+- The active and primary implementation of the JobProcessor class is located in `modules/job_processor_Original.py`.
+- Other variants such as `job_processor_fixed.py`, `job_processor_WorkingWithMTBError.py`, and `job_processor.py` are either deprecated, experimental, or serve as redirects.
+- For any modifications or extensions to job processing functionality, please update `job_processor_Original.py` unless a specific variant is intended for a distinct purpose.
+
+This note is intended to ensure clarity and maintainability of the codebase.

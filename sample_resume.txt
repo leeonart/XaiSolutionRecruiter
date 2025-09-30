@@ -1,0 +1,16 @@
+John Doe
+Software Engineer
+john.doe@email.com
+(555) 123-4567
+123 Main St, Anytown, USA
+
+EXPERIENCE:
+- Senior Software Engineer at Tech Corp (2020-2024)
+- Software Developer at Startup Inc (2018-2020)
+
+EDUCATION:
+- Bachelor of Science in Computer Science, University of Technology (2018)
+
+SKILLS:
+- Python, JavaScript, React, Node.js
+- AWS, Docker, Kubernetes

@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  # Development Frontend
+  dev-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend.dev
+    ports:
+      - "3001:3000"  # Different port to avoid conflict
+    depends_on:
+      - shared-backend
+    environment:
+      VITE_API_URL: http://localhost:8000  # Use shared backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev -- --host 0.0.0.0 --port 3000
+    networks:
+      - shared-network
+      - dev-network
+
+  # Development Nginx
+  dev-nginx:
+    image: nginx:alpine
+    ports:
+      - "8080:80"  # Different port to avoid conflict with production
+      - "8443:443"
+    volumes:
+      - ./nginx.dev.shared.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - shared-backend
+      - dev-frontend
+    command: nginx -g 'daemon off;'
+    networks:
+      - shared-network
+      - dev-network
+
+networks:
+  shared-network:
+    external: true
+  dev-network:
+    driver: bridge
+

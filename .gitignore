@@ -1,0 +1,311 @@
+# API Keys and Credentials - NEVER commit these!
+credentials/api_keys.txt
+credentials/mycreds.txt
+*.key
+*.pem
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Deployment packages
+deployment-package/
+deployment-package-complete/
+deployment-package-with-images/
+
+# Virtual environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/
+
+# Logs
+*.log
+logs/
+
+# Output files (keep patterns but allow specific files if needed)
+output/*.json
+output/*.txt
+output/*.csv
+!output/README.md
+output
+
+# Test files
+test_*.py
+*_test.py
+
+# Backup files
+*.bak
+*.backup
+
+# Downloaded files that shouldn't be tracked
+downloads/MasterTrackingBoard.csv
+downloads/*.csv
+downloads/*.json
+
+# Optimized files
+optimized*.json
+
+# Job ID lists (may contain sensitive data)
+jobidlist.txt
+A_AA_jobids.txt
+
+# Specific output files from your current gitignore
+output/7430_prompt.txt
+output/7430.json
+output/7479_prompt.txt
+output/7479.json
+output/7622.json
+output/7785_prompt.txt
+output/7785.json
+output/8007_prompt.txt
+output/8007.json
+output/8075_prompt.txt
+output/8075.json
+output/8233_prompt.txt
+output/8233.json
+output/8280_prompt.txt
+output/8299_prompt.txt
+output/8329_prompt.txt
+output/8387_prompt.txt
+output/8387.json
+output/8403_prompt.txt
+output/8405_prompt.txt
+output/8417_prompt.txt
+output/8423_prompt.txt
+output/8424_error.txt
+output/8424_prompt.txt
+output/8440_prompt.txt
+output/8447_prompt.txt
+output/8468_prompt.txt
+output/8481_prompt.txt
+output/8495_prompt.txt
+output/8537_prompt.txt
+output/8553_prompt.txt
+output/8560_prompt.txt
+output/8563_prompt.txt
+output/8567_prompt.txt
+output/8569_prompt.txt
+output/8577_prompt.txt
+output/8579_error.txt
+output/8579_prompt.txt
+output/8583_prompt.txt
+output/8585_prompt.txt
+output/8588_prompt.txt
+output/8590_prompt.txt
+output/8592_prompt.txt
+output/8595_prompt.txt
+output/8599_prompt.txt
+output/8604_prompt.txt
+output/8608_prompt.txt
+output/8609_prompt.txt
+output/8626_prompt.txt
+output/8632_prompt.txt
+output/8633.json
+output/8634.json
+output/8636_prompt.txt
+output/8637_prompt.txt
+output/8643_prompt.txt
+output/8649_prompt.txt
+output/8650_prompt.txt
+output/8652_prompt.txt
+output/8653_prompt.txt
+output/8654_prompt.txt
+output/8655_prompt.txt
+output/8656_prompt.txt
+output/8657_prompt.txt
+output/8659_prompt.txt
+output/8660_prompt.txt
+output/8662_prompt.txt
+output/8663_prompt.txt
+output/8664_prompt.txt
+output/8666_prompt.txt
+output/8667_prompt.txt
+output/8668_prompt.txt
+output/8671_prompt.txt
+output/8672_prompt.txt
+output/8673_error.txt
+output/8673_prompt.txt
+output/8676_prompt.txt
+output/8677_prompt.txt
+output/8678_prompt.txt
+output/8680_prompt.txt
+output/8681_prompt.txt
+output/8682_prompt.txt
+output/8685_prompt.txt
+output/8686_prompt.txt
+output/8687_prompt.txt
+output/8688_prompt.txt
+output/jobs_20250519.json
+output/jobs_20250522.json
+output/jobs_20250524.json
+output/jobs_20250525.json
+output/jobs_20250526.json
+output/jobs_20250601.json
+output/jobs_20250603.json
+output/jobs_20250610.json
+output/7430.json
+test_csv_mapping.py
+test_mtb_upload.py
+test_single_job.py
+optimize1.py
+optimize2.py
+optimized.json
+optimized1.json
+optimized2.json
+optimized3.json
+MasterTrackingBoard.csv
+output/ai_resume_matches_20250726/Dave Marion_analysis.md
+output/ai_resume_matches_20250726/Matt Hampton_analysis.md
+output/ai_resume_matches_20250726/Mike Fraulini A_analysis.md
+output/ai_resume_matches_20250726/Myron McPherson_analysis.md
+\[A AA].txt
+jobidlist.txt
+\[A AA B].txt
+\[].txt
+modules/gdrive_operations.py
+tmp_downloads/Annie Minga.docx
+tmp_downloads/Bongani wellcome khumalo.docx
+tmp_downloads/Bongani wellcome khumalo.pdf
+tmp_downloads/Cey-Ron Willingham.docx
+tmp_downloads/Ernesto Cortes Gonzalez.docx
+tmp_downloads/Gurjeet Sarao.docx
+tmp_downloads/James Turner.docx
+tmp_downloads/Michael Hopkins.docx
+tmp_downloads/MICHAEL KALLERES.docx
+tmp_downloads/Mike.Resume.2025.docx
+tmp_downloads/Robert Kerr.docx
+tmp_downloads/Tony Nsola.docx
+tmp_downloads/jobs_20250822_optimized.json
+data/
+
+# PC Recruiter Automation Files and Folders
+automation/
+pc_recruiter_*.py
+pc_recruiter_*.json
+pc_recruiter_*.html
+pc_recruiter_*.txt
+pc_recruiter_*.png
+pc_recruiter_*.md
+PC_RECRUITER_*.md
+AUTOMATION_*.md
+STEP_TRACKING_*.md
+
+# Browser data directories
+*browser_data/
+tracking_browser_data/
+recorder_browser_data/
+runner_browser_data/
+ultimate_browser_data/
+robust_browser_data/
+config_browser_data/
+generated_browser_data/
+selenium_browser_data/
+playwright_browser_data/
+
+# Automation output files
+pc_recruiter_workflow_*.json
+pc_recruiter_script_*.json
+pc_recruiter_generated_*.py
+pc_recruiter_*_table_*.json
+pc_recruiter_*_form_*.json
+pc_recruiter_*_links_*.json
+pc_recruiter_*_html_*.html
+pc_recruiter_*_text_*.txt
+pc_recruiter_*_*.png
+pc_recruiter_*_summary_*.json
+pc_recruiter_*_report_*.json
+pc_recruiter_*_extraction_*.png
+pc_recruiter_*_login_*.png
+pc_recruiter_*_reports_*.png
+pc_recruiter_*_navigation_*.png
+pc_recruiter_*_after_*.png
+pc_recruiter_*_before_*.png
+pc_recruiter_*_current_*.png
+pc_recruiter_*_initial_*.png
+pc_recruiter_*_debug_*.png
+pc_recruiter_*_success_*.png
+pc_recruiter_*_failed_*.png
+pc_recruiter_*_error_*.png
+
+# Automation temporary files
+screenshot_*.png
+extracted_*.json
+extracted_*.txt
+downloaded_*.csv
+downloaded_*.pdf
+downloaded_*.xls
+downloaded_*.xlsx
+pc_recruiter_page_*.html
+pc_recruiter_page_content_*.html
+pc_recruiter_page_analysis_*.json
+pc_recruiter_page_analysis.json
+
+
+deployment-package/PACKAGE_INFO.txt
+deployment-package/PACKAGE_INFO.txt
+deployment-package/PACKAGE_INFO.txt
+gary_sosenko_resume.txt
+gary_sosenko_analysis.md
+
+# Large deployment files
+deployment-package-complete/*.tar.gz
+*.tar.gz
+
+# Sensitive credential files
+credentials/
+client_secrets.json
+*.json

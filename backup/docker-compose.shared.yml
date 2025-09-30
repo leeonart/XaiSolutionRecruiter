@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  # Shared Database (used by both dev and prod)
+  shared-db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: ai_job_platform
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secure_password_change_me}
+    volumes:
+      - shared_postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"  # Standard port
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - shared-network
+
+  # Shared Backend (used by both dev and prod)
+  shared-backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-secure_password_change_me}@shared-db:5432/ai_job_platform
+      GROK_API_KEY: ${GROK_API_KEY:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      DASHSCOPE_API_KEY: ${DASHSCOPE_API_KEY:-}
+      ZAI_API_KEY: ${ZAI_API_KEY:-}
+      DEFAULT_AI_AGENT: ${DEFAULT_AI_AGENT:-openai}
+      MAX_WORKERS: 8
+    ports:
+      - "8000:8000"  # Standard port
+    depends_on:
+      shared-db:
+        condition: service_healthy
+    volumes:
+      - ./data:/app/data:rw
+      - ./output:/app/output:rw
+      - ./temp:/app/temp:rw
+    restart: unless-stopped
+    networks:
+      - shared-network
+
+volumes:
+  shared_postgres_data:
+
+networks:
+  shared-network:
+    driver: bridge
+
