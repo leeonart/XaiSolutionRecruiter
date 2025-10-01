@@ -260,8 +260,7 @@ Resume content:
                     {"role": "system", "content": "You are an expert resume validator. Review and improve extracted data."},
                     {"role": "user", "content": prompt}
                 ],
-                temperature=0.1,
-                max_tokens=max_tokens  # Dynamic token limit
+                max_completion_tokens=max_tokens  # Use max_completion_tokens for newer models
             )
             
             content = response.choices[0].message.content

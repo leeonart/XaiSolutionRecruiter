@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Upload, BarChart3, TrendingUp, Users, Target, FileText, User, Building, DollarSign, Download, Edit, Eye, Play, Search, Briefcase, MapPin, AlertCircle, CheckCircle, Maximize2, Minimize2, Move, Square, Minus, X } from 'lucide-react';
+import { Upload, Target, FileText, User, Building, DollarSign, Download, Edit, Eye, Play, Search, Briefcase, MapPin, AlertCircle, CheckCircle, Maximize2, Minimize2, Move, Square, Minus, X } from 'lucide-react';
 import AdvancedSearchFilters from '@/components/AdvancedSearchFilters';
 import SearchResults from '@/components/SearchResults';
 import SavedSearches from '@/components/SavedSearches';
@@ -82,10 +82,10 @@ const AIResumeManagementNew: React.FC = () => {
   const [selectedResume, setSelectedResume] = useState<AIResume | null>(null);
   const [activeTab, setActiveTab] = useState('database');
   const [savedSearches, setSavedSearches] = useState<SavedSearch[]>([]);
-  const [searchAnalytics, setSearchAnalytics] = useState<any>(null);
   const [totalCount, setTotalCount] = useState(0);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
   
   // Draggable modal states
   const [detailsModalPosition, setDetailsModalPosition] = useState({ x: 0, y: 0 });
@@ -125,9 +125,19 @@ const AIResumeManagementNew: React.FC = () => {
 
   useEffect(() => {
     loadSavedSearches();
-    loadSearchAnalytics();
     loadResumes();
   }, []);
+
+  // Debug state changes and ensure tab stays on search during search
+  useEffect(() => {
+    console.log('Resumes state changed:', resumes.length, 'Total count:', totalCount);
+    
+    // If we're in the middle of a search, ensure we stay on the search tab
+    if (isSearching && activeTab !== 'search') {
+      console.log('Forcing search tab during search');
+      setActiveTab('search');
+    }
+  }, [resumes, totalCount, isSearching]);
 
   // Add mouse event listeners for dragging
   useEffect(() => {
@@ -150,14 +160,6 @@ const AIResumeManagementNew: React.FC = () => {
     }
   };
 
-  const loadSearchAnalytics = async () => {
-    try {
-      const response = await apiClient.request<any>('/api/search-analytics');
-      setSearchAnalytics(response);
-    } catch (err) {
-      console.error('Failed to load search analytics:', err);
-    }
-  };
 
   const loadResumes = async () => {
     try {
@@ -177,30 +179,132 @@ const AIResumeManagementNew: React.FC = () => {
   const handleSearch = async (filters: any) => {
     setLoading(true);
     setError(null);
+    setIsSearching(true);
+    
+    // Switch to search tab when search starts
+    if (activeTab !== 'search') {
+      setActiveTab('search');
+    }
 
     try {
       // Build query parameters from filters
       const params = new URLSearchParams();
       
+      console.log('Search filters received:', filters);
+      
+      // Map frontend field names to backend parameter names
+      const fieldMapping: { [key: string]: string } = {
+        // Essential Filters (Always Visible)
+        'technicalSkills': 'technical_skills',
+        'skillCategories': 'skill_categories',
+        'certifications': 'certifications',
+        'certificationCategories': 'certification_categories',
+        'industryExperience': 'industry_experience',
+        'industryCategories': 'industry_categories',
+        'skillsMatchMode': 'skills_match_mode',
+        'certificationsMatchMode': 'certifications_match_mode',
+        
+        // Additional Filters (Expandable)
+        'name': 'name',
+        'email': 'email', 
+        'phone': 'phone',
+                'yearsExperienceMin': 'years_experience_min',
+                'yearsExperienceMax': 'years_experience_max',
+                'educationLevel': 'education_level',
+                'educationDegrees': 'education_degrees',
+                'educationFields': 'education_fields',
+        'currentLocation': 'current_location',
+        'preferredLocations': 'preferred_locations',
+        'locationsMatchMode': 'locations_match_mode',
+        'citizenship': 'citizenship',
+        'workAuthorization': 'work_authorization',
+        
+        // AI Search
+        'semanticQuery': 'semantic_query',
+        'jobFitScore': 'job_fit_score',
+        
+        // Sorting & Pagination
+        'sortBy': 'sort_by',
+        'skip': 'skip',
+        'limit': 'limit'
+      };
+
+      // Process filters with validation
       Object.keys(filters).forEach(key => {
         const value = filters[key];
         if (value !== undefined && value !== null && value !== '') {
+          // Use mapped field name or original key
+          const paramKey = fieldMapping[key] || key;
+          
           if (Array.isArray(value)) {
-            params.append(key, value.join(','));
-          } else {
-            params.append(key, value.toString());
+            // Only add non-empty arrays
+            if (value.length > 0) {
+              params.append(paramKey, value.join(','));
+            }
+          } else if (typeof value === 'boolean') {
+            // Handle boolean values
+            params.append(paramKey, value.toString());
+          } else if (typeof value === 'number') {
+            // Handle numeric values
+            params.append(paramKey, value.toString());
+          } else if (typeof value === 'string' && value.trim() !== '') {
+            // Handle string values (skip empty strings)
+            params.append(paramKey, value.trim());
           }
         }
       });
 
-      const response = await apiClient.request<any>(`/api/search-resumes?${params.toString()}`);
-      setResumes(response.resumes || []);
-      setTotalCount(response.total_count || 0);
+      const queryString = params.toString();
+      console.log('API query string:', queryString);
+
+      // Make API request with timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
+      try {
+        const response = await apiClient.request<any>(`/api/search-resumes?${queryString}`, {
+          signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        
+        console.log('API response:', response);
+        console.log('API response resumes count:', response.resumes?.length);
+        console.log('API response total_count:', response.total_count);
+        
+        const newResumes = response.resumes || [];
+        const newTotalCount = response.total_count || 0;
+        
+        console.log('About to update state:');
+        console.log('  newResumes length:', newResumes.length);
+        console.log('  newTotalCount:', newTotalCount);
+        
+        setResumes(newResumes);
+        setTotalCount(newTotalCount);
+        
+        console.log('State update completed');
+        
+        // Show success message for non-empty results
+        if (newResumes.length > 0) {
+          console.log(`Found ${newResumes.length} matching resumes`);
+        } else {
+          console.log('No resumes found matching the criteria');
+        }
+        
+      } catch (apiError: any) {
+        clearTimeout(timeoutId);
+        if (apiError.name === 'AbortError') {
+          throw new Error('Search request timed out. Please try again.');
+        }
+        throw apiError;
+      }
+      
     } catch (err: any) {
       setError(err.message || 'Search failed');
       console.error('Search error:', err);
     } finally {
       setLoading(false);
+      setIsSearching(false);
     }
   };
 
@@ -697,71 +801,12 @@ const AIResumeManagementNew: React.FC = () => {
         </div>
       )}
 
-      {/* Search Analytics Dashboard */}
-      {searchAnalytics && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Total Resumes</p>
-                  <p className="text-2xl font-bold">{searchAnalytics.total_resumes}</p>
-                </div>
-                <Users className="h-8 w-8 text-blue-600" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Searches Today</p>
-                  <p className="text-2xl font-bold">
-                    {searchAnalytics.search_performance?.total_searches_today}
-                  </p>
-                </div>
-                <TrendingUp className="h-8 w-8 text-green-600" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Avg Search Time</p>
-                  <p className="text-2xl font-bold">
-                    {searchAnalytics.search_performance?.avg_search_time}
-                  </p>
-                </div>
-                <Target className="h-8 w-8 text-purple-600" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Success Rate</p>
-                  <p className="text-2xl font-bold">
-                    {searchAnalytics.search_performance?.success_rate}
-                  </p>
-                </div>
-                <BarChart3 className="h-8 w-8 text-yellow-600" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-1">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-1">
           <TabsTrigger value="database" className="text-xs sm:text-sm">Database</TabsTrigger>
           <TabsTrigger value="search" className="text-xs sm:text-sm">Search</TabsTrigger>
           <TabsTrigger value="saved" className="text-xs sm:text-sm">Saved</TabsTrigger>
-          <TabsTrigger value="analytics" className="text-xs sm:text-sm">Analytics</TabsTrigger>
           <TabsTrigger value="upload" className="text-xs sm:text-sm">Upload</TabsTrigger>
           <TabsTrigger value="matching" className="text-xs sm:text-sm">Matching</TabsTrigger>
           <TabsTrigger value="management" className="text-xs sm:text-sm">Manage</TabsTrigger>
@@ -802,58 +847,6 @@ const AIResumeManagementNew: React.FC = () => {
           />
         </TabsContent>
 
-        <TabsContent value="analytics" className="space-y-6">
-          {searchAnalytics && (
-            <>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Popular Skills</CardTitle>
-                  <CardDescription>Most searched skills in resumes</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {searchAnalytics.popular_skills?.map((skill: any, index: number) => (
-                      <div key={index} className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{skill.skill}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div className="w-48 bg-gray-200 rounded-full h-2">
-                            <div
-                              className="bg-blue-600 h-2 rounded-full"
-                              style={{ width: `${(skill.count / 50) * 100}%` }}
-                            ></div>
-                          </div>
-                          <span className="text-sm text-gray-600 w-8">{skill.count}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Recent Searches</CardTitle>
-                  <CardDescription>Latest search queries</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    {searchAnalytics.recent_searches?.map((search: any, index: number) => (
-                      <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                        <span className="font-medium">{search.query}</span>
-                        <div className="flex items-center gap-4 text-sm text-gray-600">
-                          <span>{search.count} results</span>
-                          <span>{search.date}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </>
-          )}
-        </TabsContent>
 
         {/* Resume Database Tab */}
         <TabsContent value="database" className="space-y-4 sm:space-y-6">

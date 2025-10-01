@@ -43,6 +43,9 @@ class AIResume(SQLModel, table=True):
     current_salary: Optional[str] = Field(default=None, max_length=100)
     expected_salary: Optional[str] = Field(default=None, max_length=100)
     
+    # Experience
+    years_experience: Optional[int] = Field(default=None)
+    
     # Work Preferences
     relocation: Optional[str] = Field(default=None, max_length=100)
     remote_work: Optional[str] = Field(default=None, max_length=100)

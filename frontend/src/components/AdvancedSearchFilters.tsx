@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,7 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
-import { X, Plus, Search, Filter, Save, History, Star } from 'lucide-react';
+import { X, Plus, Search, Filter, Save, History, Star, ChevronDown } from 'lucide-react';
+// import FilterModal from './FilterModal';
 
 interface SearchFilters {
   // Basic Search
@@ -20,15 +21,18 @@ interface SearchFilters {
   // Professional Profile
   yearsExperienceMin?: number;
   yearsExperienceMax?: number;
-  seniorityLevel?: string;
-  careerLevel?: string;
-  managementExperience?: boolean;
   
   // Skills & Qualifications
   technicalSkills?: string[];
+  skillCategories?: string[];  // New: Category-based skill search
   certifications?: string[];
+  certificationCategories?: string[];  // New: Category-based certification search
   licenses?: string[];
   educationLevel?: string;
+  educationDegrees?: string[];  // New: Multiple education degrees
+  educationFields?: string[];   // New: Multiple education fields
+  skillsMatchMode?: 'AND' | 'OR';  // New: How to match multiple skills
+  certificationsMatchMode?: 'AND' | 'OR';  // New: How to match multiple certs
   
   // Location & Mobility
   currentLocation?: string;
@@ -36,6 +40,7 @@ interface SearchFilters {
   restrictedLocations?: string[];
   relocationWilling?: boolean;
   remoteWorkPreference?: string;
+  locationsMatchMode?: 'AND' | 'OR';  // New: How to match multiple locations
   
   // Compensation
   currentSalaryMin?: number;
@@ -50,11 +55,17 @@ interface SearchFilters {
   
   // Industry & Company
   industryExperience?: string;
+  industryCategories?: string[];  // New: Category-based industry search
   currentCompany?: string;
   
   // AI Search
   semanticQuery?: string;
   jobFitScore?: number;
+}
+
+interface FilterItem {
+  name: string;
+  count: number;
 }
 
 interface AdvancedSearchFiltersProps {
@@ -70,7 +81,11 @@ const AdvancedSearchFilters: React.FC<AdvancedSearchFiltersProps> = ({
   savedSearches = [],
   onLoadSavedSearch
 }) => {
-  const [filters, setFilters] = useState<SearchFilters>({});
+  const [filters, setFilters] = useState<SearchFilters>({
+    skillsMatchMode: 'AND',
+    certificationsMatchMode: 'AND',
+    locationsMatchMode: 'OR'
+  });
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [selectedCertifications, setSelectedCertifications] = useState<string[]>([]);
   const [selectedPreferredLocations, setSelectedPreferredLocations] = useState<string[]>([]);
@@ -80,22 +95,63 @@ const AdvancedSearchFilters: React.FC<AdvancedSearchFiltersProps> = ({
   const [saveSearchName, setSaveSearchName] = useState('');
   const [showSaveDialog, setShowSaveDialog] = useState(false);
 
-  const commonSkills = [
-    'Python', 'JavaScript', 'Java', 'C++', 'SQL', 'React', 'Angular', 'Node.js',
-    'AWS', 'Azure', 'Docker', 'Kubernetes', 'Git', 'Linux', 'Windows',
-    'Project Management', 'Agile', 'Scrum', 'Leadership', 'Communication'
-  ];
+  // Dynamic suggestions from API
+  const [allSkills, setAllSkills] = useState<FilterItem[]>([]);
+  const [allCertifications, setAllCertifications] = useState<FilterItem[]>([]);
+  const [allLocations, setAllLocations] = useState<FilterItem[]>([]);
+  const [skillCategories, setSkillCategories] = useState<{[key: string]: FilterItem[]}>({});
+  const [certificationCategories, setCertificationCategories] = useState<{[key: string]: FilterItem[]}>({});
+  const [industryCategories, setIndustryCategories] = useState<{[key: string]: FilterItem[]}>({});
+  const [educationDegrees, setEducationDegrees] = useState<FilterItem[]>([]);
+  const [educationFields, setEducationFields] = useState<FilterItem[]>([]);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(true);
 
-  const commonCertifications = [
-    'PMP', 'PMP', 'CISSP', 'AWS Certified', 'Microsoft Certified', 'Google Certified',
-    'Six Sigma', 'ITIL', 'Cisco CCNA', 'CompTIA A+', 'CEH', 'CISA'
-  ];
+  // Modal states
+  const [showSkillsModal, setShowSkillsModal] = useState(false);
+  const [showCertsModal, setShowCertsModal] = useState(false);
+  const [showLocationsModal, setShowLocationsModal] = useState(false);
+  
 
-  const commonLocations = [
-    'New York, NY', 'Los Angeles, CA', 'Chicago, IL', 'Houston, TX', 'Phoenix, AZ',
-    'Philadelphia, PA', 'San Antonio, TX', 'San Diego, CA', 'Dallas, TX', 'San Jose, CA',
-    'Austin, TX', 'Jacksonville, FL', 'Fort Worth, TX', 'Columbus, OH', 'Charlotte, NC'
-  ];
+  // Fetch dynamic suggestions on mount
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      try {
+        const response = await fetch('/api/resume-suggestions');
+        const data = await response.json();
+        // Extract individual skills and certifications from categories
+        const allSkillsList: FilterItem[] = [];
+        const allCertsList: FilterItem[] = [];
+        
+        // Flatten skill categories into individual skills
+        Object.values(data.skill_categories || {}).forEach((categorySkills: any) => {
+          if (Array.isArray(categorySkills)) {
+            allSkillsList.push(...categorySkills);
+          }
+        });
+        
+        // Flatten certification categories into individual certifications
+        Object.values(data.certification_categories || {}).forEach((categoryCerts: any) => {
+          if (Array.isArray(categoryCerts)) {
+            allCertsList.push(...categoryCerts);
+          }
+        });
+        
+                setAllSkills(allSkillsList);
+                setAllCertifications(allCertsList);
+                setAllLocations(data.locations || []);
+                setSkillCategories(data.skill_categories || {});
+                setCertificationCategories(data.certification_categories || {});
+                setIndustryCategories(data.industry_categories || {});
+                setEducationDegrees(data.education_degrees || []);
+                setEducationFields(data.education_fields || []);
+      } catch (error) {
+        console.error('Failed to load suggestions:', error);
+      } finally {
+        setLoadingSuggestions(false);
+      }
+    };
+    fetchSuggestions();
+  }, []);
 
   const handleFilterChange = (key: keyof SearchFilters, value: any) => {
     setFilters(prev => ({ ...prev, [key]: value }));
@@ -150,6 +206,8 @@ const AdvancedSearchFilters: React.FC<AdvancedSearchFiltersProps> = ({
   };
 
   const handleSearch = () => {
+    console.log('Search button clicked, current filters:', filters);
+    console.log('Selected skills:', selectedSkills);
     onSearch(filters);
   };
 
@@ -203,60 +261,283 @@ const AdvancedSearchFilters: React.FC<AdvancedSearchFiltersProps> = ({
         </div>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="basic" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="basic">Basic</TabsTrigger>
-            <TabsTrigger value="professional">Professional</TabsTrigger>
-            <TabsTrigger value="location">Location</TabsTrigger>
+        <Tabs defaultValue="advanced" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="advanced">Advanced Search</TabsTrigger>
             <TabsTrigger value="ai">AI Search</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="basic" className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <Label htmlFor="name">Name</Label>
-                <Input
-                  id="name"
-                  placeholder="Search by name..."
-                  value={filters.name || ''}
-                  onChange={(e) => handleFilterChange('name', e.target.value)}
-                />
+          <TabsContent value="advanced" className="space-y-6">
+            {/* Basic Search Filters - Top Priority */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-800">Basic Search</h3>
+              
+              {/* Contact Information */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label htmlFor="name">Name</Label>
+                  <Input
+                    id="name"
+                    placeholder="Search by name..."
+                    value={filters.name || ''}
+                    onChange={(e) => handleFilterChange('name', e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    placeholder="Search by email..."
+                    value={filters.email || ''}
+                    onChange={(e) => handleFilterChange('email', e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="phone">Phone</Label>
+                  <Input
+                    id="phone"
+                    placeholder="Search by phone..."
+                    value={filters.phone || ''}
+                    onChange={(e) => handleFilterChange('phone', e.target.value)}
+                  />
+                </div>
               </div>
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  placeholder="Search by email..."
-                  value={filters.email || ''}
-                  onChange={(e) => handleFilterChange('email', e.target.value)}
-                />
+
+              {/* Professional Profile */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label>Years of Experience</Label>
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm text-gray-600">Min:</span>
+                      <Slider
+                        value={[filters.yearsExperienceMin || 0]}
+                        onValueChange={(value) => handleFilterChange('yearsExperienceMin', value[0])}
+                        max={20}
+                        step={1}
+                        className="flex-1"
+                      />
+                      <span>{filters.yearsExperienceMin || 0} years</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm text-gray-600">Max:</span>
+                      <Slider
+                        value={[filters.yearsExperienceMax || 20]}
+                        onValueChange={(value) => handleFilterChange('yearsExperienceMax', value[0])}
+                        max={20}
+                        step={1}
+                        className="flex-1"
+                      />
+                      <span>{filters.yearsExperienceMax || 20} years</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <Label>Education Degrees</Label>
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap gap-1 max-h-32 overflow-y-auto border rounded p-2">
+                      {educationDegrees.slice(0, 10).map(degree => (
+                        <Badge
+                          key={degree.name}
+                          variant={filters.educationDegrees?.includes(degree.name) ? "default" : "outline"}
+                          className="cursor-pointer text-xs"
+                          onClick={() => {
+                            const currentDegrees = filters.educationDegrees || [];
+                            if (currentDegrees.includes(degree.name)) {
+                              setFilters(prev => ({ 
+                                ...prev, 
+                                educationDegrees: currentDegrees.filter(d => d !== degree.name) 
+                              }));
+                            } else {
+                              setFilters(prev => ({ 
+                                ...prev, 
+                                educationDegrees: [...currentDegrees, degree.name] 
+                              }));
+                            }
+                          }}
+                        >
+                          {degree.name} ({degree.count})
+                        </Badge>
+                      ))}
+                    </div>
+                    {filters.educationDegrees && filters.educationDegrees.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {filters.educationDegrees.map(degree => (
+                          <Badge key={degree} variant="secondary" className="flex items-center gap-1 text-xs">
+                            {degree}
+                            <X className="h-3 w-3 cursor-pointer" onClick={() => {
+                              setFilters(prev => ({ 
+                                ...prev, 
+                                educationDegrees: (prev.educationDegrees || []).filter(d => d !== degree) 
+                              }));
+                            }} />
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
+
+              {/* Education Fields */}
               <div>
-                <Label htmlFor="phone">Phone</Label>
-                <Input
-                  id="phone"
-                  placeholder="Search by phone..."
-                  value={filters.phone || ''}
-                  onChange={(e) => handleFilterChange('phone', e.target.value)}
-                />
+                <Label>Education Fields</Label>
+                <div className="space-y-2">
+                  <div className="flex flex-wrap gap-1 max-h-32 overflow-y-auto border rounded p-2">
+                    {educationFields.slice(0, 10).map(field => (
+                      <Badge
+                        key={field.name}
+                        variant={filters.educationFields?.includes(field.name) ? "default" : "outline"}
+                        className="cursor-pointer text-xs"
+                        onClick={() => {
+                          const currentFields = filters.educationFields || [];
+                          if (currentFields.includes(field.name)) {
+                            setFilters(prev => ({ 
+                              ...prev, 
+                              educationFields: currentFields.filter(f => f !== field.name) 
+                            }));
+                          } else {
+                            setFilters(prev => ({ 
+                              ...prev, 
+                              educationFields: [...currentFields, field.name] 
+                            }));
+                          }
+                        }}
+                      >
+                        {field.name} ({field.count})
+                      </Badge>
+                    ))}
+                  </div>
+                  {filters.educationFields && filters.educationFields.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {filters.educationFields.map(field => (
+                        <Badge key={field} variant="secondary" className="flex items-center gap-1 text-xs">
+                          {field}
+                          <X className="h-3 w-3 cursor-pointer" onClick={() => {
+                            setFilters(prev => ({ 
+                              ...prev, 
+                              educationFields: (prev.educationFields || []).filter(f => f !== field) 
+                            }));
+                          }} />
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Location & Work Authorization */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="currentLocation">Current Location</Label>
+                  <Input
+                    id="currentLocation"
+                    placeholder="e.g., California, Texas..."
+                    value={filters.currentLocation || ''}
+                    onChange={(e) => handleFilterChange('currentLocation', e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="citizenship">Citizenship</Label>
+                  <Input
+                    id="citizenship"
+                    placeholder="e.g., US Citizen, Canadian..."
+                    value={filters.citizenship || ''}
+                    onChange={(e) => handleFilterChange('citizenship', e.target.value)}
+                  />
+                </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Category-Based Search - Grouped by Categories */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-800">Category-Based Search</h3>
+              
+              {/* Technical Skills Categories */}
               <div>
-                <Label>Technical Skills</Label>
-                <div className="flex gap-2 mb-2">
-                  <Input
-                    placeholder="Add skill..."
-                    value={newSkill}
-                    onChange={(e) => setNewSkill(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && addSkill()}
-                  />
-                  <Button size="sm" onClick={addSkill}>
-                    <Plus className="h-4 w-4" />
-                  </Button>
+                <div className="flex items-center justify-between mb-2">
+                  <Label className="text-base font-medium">Technical Skills Categories</Label>
+                  <div className="flex gap-2 items-center">
+                    <span className="text-xs text-gray-500">Match:</span>
+                    <div className="flex gap-1">
+                      <Button
+                        size="sm"
+                        variant={filters.skillsMatchMode === 'AND' ? 'default' : 'outline'}
+                        onClick={() => handleFilterChange('skillsMatchMode', 'AND')}
+                        className="h-7 px-2 text-xs"
+                      >
+                        AND
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant={filters.skillsMatchMode === 'OR' ? 'default' : 'outline'}
+                        onClick={() => handleFilterChange('skillsMatchMode', 'OR')}
+                        className="h-7 px-2 text-xs"
+                      >
+                        OR
+                      </Button>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex flex-wrap gap-2">
+                {!loadingSuggestions && Object.keys(skillCategories).length > 0 && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {Object.entries(skillCategories).map(([categoryName, skills]) => (
+                      <div key={categoryName} className="border rounded-lg p-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={filters.skillCategories?.includes(categoryName) || false}
+                              onChange={(e) => {
+                                const currentCategories = filters.skillCategories || [];
+                                if (e.target.checked) {
+                                  setFilters(prev => ({ 
+                                    ...prev, 
+                                    skillCategories: [...currentCategories, categoryName] 
+                                  }));
+                                } else {
+                                  setFilters(prev => ({ 
+                                    ...prev, 
+                                    skillCategories: currentCategories.filter(c => c !== categoryName) 
+                                  }));
+                                }
+                              }}
+                              className="rounded"
+                            />
+                            <Label className="text-sm font-medium">{categoryName}</Label>
+                          </div>
+                          <Badge variant="outline" className="text-xs">
+                            {skills.length} skills
+                          </Badge>
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {skills.slice(0, 3).map(skill => (
+                            <Badge
+                              key={skill.name}
+                              variant="outline"
+                              className="cursor-pointer text-xs"
+                              onClick={() => {
+                                if (!selectedSkills.includes(skill.name)) {
+                                  setSelectedSkills(prev => [...prev, skill.name]);
+                                  setFilters(prev => ({ ...prev, technicalSkills: [...(prev.technicalSkills || []), skill.name] }));
+                                }
+                              }}
+                            >
+                              {skill.name} ({skill.count})
+                            </Badge>
+                          ))}
+                          {skills.length > 3 && (
+                            <Badge variant="secondary" className="text-xs">
+                              +{skills.length - 3} more
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-2 mt-2">
                   {selectedSkills.map(skill => (
                     <Badge key={skill} variant="secondary" className="flex items-center gap-1">
                       {skill}
@@ -264,43 +545,92 @@ const AdvancedSearchFilters: React.FC<AdvancedSearchFiltersProps> = ({
                     </Badge>
                   ))}
                 </div>
-                <div className="mt-2">
-                  <Label className="text-sm text-gray-600">Common Skills:</Label>
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {commonSkills.map(skill => (
-                      <Badge
-                        key={skill}
-                        variant="outline"
-                        className="cursor-pointer text-xs"
-                        onClick={() => {
-                          if (!selectedSkills.includes(skill)) {
-                            addSkill();
-                            setNewSkill(skill);
-                            addSkill();
-                          }
-                        }}
-                      >
-                        {skill}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
               </div>
 
+              {/* Certification Categories */}
               <div>
-                <Label>Certifications</Label>
-                <div className="flex gap-2 mb-2">
-                  <Input
-                    placeholder="Add certification..."
-                    value={newCertification}
-                    onChange={(e) => setNewCertification(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && addCertification()}
-                  />
-                  <Button size="sm" onClick={addCertification}>
-                    <Plus className="h-4 w-4" />
-                  </Button>
+                <div className="flex items-center justify-between mb-2">
+                  <Label className="text-base font-medium">Certification Categories</Label>
+                  <div className="flex gap-2 items-center">
+                    <span className="text-xs text-gray-500">Match:</span>
+                    <div className="flex gap-1">
+                      <Button
+                        size="sm"
+                        variant={filters.certificationsMatchMode === 'AND' ? 'default' : 'outline'}
+                        onClick={() => handleFilterChange('certificationsMatchMode', 'AND')}
+                        className="h-7 px-2 text-xs"
+                      >
+                        AND
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant={filters.certificationsMatchMode === 'OR' ? 'default' : 'outline'}
+                        onClick={() => handleFilterChange('certificationsMatchMode', 'OR')}
+                        className="h-7 px-2 text-xs"
+                      >
+                        OR
+                      </Button>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex flex-wrap gap-2">
+                {!loadingSuggestions && Object.keys(certificationCategories).length > 0 && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {Object.entries(certificationCategories).map(([categoryName, certs]) => (
+                      <div key={categoryName} className="border rounded-lg p-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={filters.certificationCategories?.includes(categoryName) || false}
+                              onChange={(e) => {
+                                const currentCategories = filters.certificationCategories || [];
+                                if (e.target.checked) {
+                                  setFilters(prev => ({ 
+                                    ...prev, 
+                                    certificationCategories: [...currentCategories, categoryName] 
+                                  }));
+                                } else {
+                                  setFilters(prev => ({ 
+                                    ...prev, 
+                                    certificationCategories: currentCategories.filter(c => c !== categoryName) 
+                                  }));
+                                }
+                              }}
+                              className="rounded"
+                            />
+                            <Label className="text-sm font-medium">{categoryName}</Label>
+                          </div>
+                          <Badge variant="outline" className="text-xs">
+                            {certs.length} certs
+                          </Badge>
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {certs.slice(0, 3).map(cert => (
+                            <Badge
+                              key={cert.name}
+                              variant="outline"
+                              className="cursor-pointer text-xs"
+                              onClick={() => {
+                                if (!selectedCertifications.includes(cert.name)) {
+                                  setSelectedCertifications(prev => [...prev, cert.name]);
+                                  setFilters(prev => ({ ...prev, certifications: [...(prev.certifications || []), cert.name] }));
+                                }
+                              }}
+                            >
+                              {cert.name} ({cert.count})
+                            </Badge>
+                          ))}
+                          {certs.length > 3 && (
+                            <Badge variant="secondary" className="text-xs">
+                              +{certs.length - 3} more
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-2 mt-2">
                   {selectedCertifications.map(cert => (
                     <Badge key={cert} variant="secondary" className="flex items-center gap-1">
                       {cert}
@@ -308,234 +638,20 @@ const AdvancedSearchFilters: React.FC<AdvancedSearchFiltersProps> = ({
                     </Badge>
                   ))}
                 </div>
-                <div className="mt-2">
-                  <Label className="text-sm text-gray-600">Common Certifications:</Label>
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {commonCertifications.map(cert => (
-                      <Badge
-                        key={cert}
-                        variant="outline"
-                        className="cursor-pointer text-xs"
-                        onClick={() => {
-                          if (!selectedCertifications.includes(cert)) {
-                            setNewCertification(cert);
-                            addCertification();
-                          }
-                        }}
-                      >
-                        {cert}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
               </div>
-            </div>
-          </TabsContent>
 
-          <TabsContent value="professional" className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Industry Experience */}
               <div>
-                <Label>Years of Experience</Label>
-                <div className="px-3">
-                  <Slider
-                    value={[filters.yearsExperienceMin || 0, filters.yearsExperienceMax || 20]}
-                    onValueChange={([min, max]) => {
-                      handleFilterChange('yearsExperienceMin', min);
-                      handleFilterChange('yearsExperienceMax', max);
-                    }}
-                    max={30}
-                    step={1}
-                    className="w-full"
-                  />
-                  <div className="flex justify-between text-sm text-gray-600 mt-1">
-                    <span>{filters.yearsExperienceMin || 0} years</span>
-                    <span>{filters.yearsExperienceMax || 20} years</span>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <Label>Seniority Level</Label>
-                <Select value={filters.seniorityLevel || ''} onValueChange={(value) => handleFilterChange('seniorityLevel', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select seniority level" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="entry">Entry Level</SelectItem>
-                    <SelectItem value="mid">Mid Level</SelectItem>
-                    <SelectItem value="senior">Senior Level</SelectItem>
-                    <SelectItem value="executive">Executive Level</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label>Career Level</Label>
-                <Select value={filters.careerLevel || ''} onValueChange={(value) => handleFilterChange('careerLevel', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select career level" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="individual">Individual Contributor</SelectItem>
-                    <SelectItem value="manager">Manager</SelectItem>
-                    <SelectItem value="director">Director</SelectItem>
-                    <SelectItem value="vp">VP+</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label>Education Level</Label>
-                <Select value={filters.educationLevel || ''} onValueChange={(value) => handleFilterChange('educationLevel', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select education level" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="high_school">High School</SelectItem>
-                    <SelectItem value="associate">Associate Degree</SelectItem>
-                    <SelectItem value="bachelor">Bachelor's Degree</SelectItem>
-                    <SelectItem value="master">Master's Degree</SelectItem>
-                    <SelectItem value="phd">PhD</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label>Current Salary Range</Label>
-                <div className="px-3">
-                  <Slider
-                    value={[filters.currentSalaryMin || 40000, filters.currentSalaryMax || 150000]}
-                    onValueChange={([min, max]) => {
-                      handleFilterChange('currentSalaryMin', min);
-                      handleFilterChange('currentSalaryMax', max);
-                    }}
-                    max={300000}
-                    step={5000}
-                    className="w-full"
-                  />
-                  <div className="flex justify-between text-sm text-gray-600 mt-1">
-                    <span>${(filters.currentSalaryMin || 40000).toLocaleString()}</span>
-                    <span>${(filters.currentSalaryMax || 150000).toLocaleString()}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <Label>Expected Salary Range</Label>
-                <div className="px-3">
-                  <Slider
-                    value={[filters.expectedSalaryMin || 50000, filters.expectedSalaryMax || 200000]}
-                    onValueChange={([min, max]) => {
-                      handleFilterChange('expectedSalaryMin', min);
-                      handleFilterChange('expectedSalaryMax', max);
-                    }}
-                    max={400000}
-                    step={5000}
-                    className="w-full"
-                  />
-                  <div className="flex justify-between text-sm text-gray-600 mt-1">
-                    <span>${(filters.expectedSalaryMin || 50000).toLocaleString()}</span>
-                    <span>${(filters.expectedSalaryMax || 200000).toLocaleString()}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="management"
-                  checked={filters.managementExperience || false}
-                  onCheckedChange={(checked) => handleFilterChange('managementExperience', checked)}
-                />
-                <Label htmlFor="management">Has Management Experience</Label>
-              </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="location" className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="currentLocation">Current Location</Label>
+                <Label htmlFor="industryExperience">Industry Experience</Label>
                 <Input
-                  id="currentLocation"
-                  placeholder="City, State or Country..."
-                  value={filters.currentLocation || ''}
-                  onChange={(e) => handleFilterChange('currentLocation', e.target.value)}
+                  id="industryExperience"
+                  placeholder="e.g., Cement, Mining, Construction..."
+                  value={filters.industryExperience || ''}
+                  onChange={(e) => handleFilterChange('industryExperience', e.target.value)}
                 />
-              </div>
-
-              <div>
-                <Label>Remote Work Preference</Label>
-                <Select value={filters.remoteWorkPreference || ''} onValueChange={(value) => handleFilterChange('remoteWorkPreference', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select preference" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="remote">Remote Only</SelectItem>
-                    <SelectItem value="hybrid">Hybrid</SelectItem>
-                    <SelectItem value="onsite">On-site Only</SelectItem>
-                    <SelectItem value="flexible">Flexible</SelectItem>
-                  </SelectContent>
-                </Select>
               </div>
             </div>
 
-            <div>
-              <Label>Preferred Locations</Label>
-              <div className="flex gap-2 mb-2">
-                <Input
-                  placeholder="Add preferred location..."
-                  value={newLocation}
-                  onChange={(e) => setNewLocation(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && addPreferredLocation()}
-                />
-                <Button size="sm" onClick={addPreferredLocation}>
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {selectedPreferredLocations.map(location => (
-                  <Badge key={location} variant="secondary" className="flex items-center gap-1">
-                    {location}
-                    <X className="h-3 w-3 cursor-pointer" onClick={() => removePreferredLocation(location)} />
-                  </Badge>
-                ))}
-              </div>
-              <div className="mt-2">
-                <Label className="text-sm text-gray-600">Common Locations:</Label>
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {commonLocations.map(location => (
-                    <Badge
-                      key={location}
-                      variant="outline"
-                      className="cursor-pointer text-xs"
-                      onClick={() => {
-                        if (!selectedPreferredLocations.includes(location)) {
-                          setNewLocation(location);
-                          addPreferredLocation();
-                        }
-                      }}
-                    >
-                      {location}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="relocation"
-                  checked={filters.relocationWilling || false}
-                  onCheckedChange={(checked) => handleFilterChange('relocationWilling', checked)}
-                />
-                <Label htmlFor="relocation">Willing to Relocate</Label>
-              </div>
-            </div>
           </TabsContent>
 
           <TabsContent value="ai" className="space-y-4">
@@ -575,14 +691,20 @@ const AdvancedSearchFilters: React.FC<AdvancedSearchFiltersProps> = ({
                     <SelectValue placeholder="Select industry" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="technology">Technology</SelectItem>
-                    <SelectItem value="manufacturing">Manufacturing</SelectItem>
-                    <SelectItem value="healthcare">Healthcare</SelectItem>
-                    <SelectItem value="finance">Finance</SelectItem>
-                    <SelectItem value="construction">Construction</SelectItem>
                     <SelectItem value="mining">Mining</SelectItem>
-                    <SelectItem value="cement">Cement</SelectItem>
+                    <SelectItem value="cement">Cement Manufacturing</SelectItem>
+                    <SelectItem value="aggregates">Aggregates</SelectItem>
+                    <SelectItem value="construction">Construction</SelectItem>
+                    <SelectItem value="manufacturing">Manufacturing</SelectItem>
                     <SelectItem value="chemical">Chemical</SelectItem>
+                    <SelectItem value="industrial">Industrial</SelectItem>
+                    <SelectItem value="materials">Construction Materials</SelectItem>
+                    <SelectItem value="equipment">Equipment Manufacturing</SelectItem>
+                    <SelectItem value="maintenance">Maintenance</SelectItem>
+                    <SelectItem value="minerals">Industrial Minerals</SelectItem>
+                    <SelectItem value="energy">Energy</SelectItem>
+                    <SelectItem value="environmental">Environmental Engineering</SelectItem>
+                    <SelectItem value="consulting">Consulting</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -658,6 +780,20 @@ const AdvancedSearchFilters: React.FC<AdvancedSearchFiltersProps> = ({
           </div>
         </div>
       )}
+
+      {/* Filter Modals - Temporarily disabled for debugging */}
+      {/* <FilterModal
+        title="Select Skills"
+        items={allSkills}
+        selectedItems={selectedSkills}
+        open={showSkillsModal}
+        onApply={(selected) => {
+          setSelectedSkills(selected);
+          setFilters(prev => ({ ...prev, technicalSkills: selected }));
+          setShowSkillsModal(false);
+        }}
+        onCancel={() => setShowSkillsModal(false)}
+      /> */}
     </Card>
   );
 };

@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Depends, Query, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse, FileResponse, RedirectResponse
-from sqlmodel import SQLModel, create_engine, Session, select, Field, delete, or_, func
+from sqlmodel import SQLModel, create_engine, Session, select, Field, delete, or_, func, text
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any, Tuple
 import os
@@ -3825,6 +3825,10 @@ async def process_single_file(file):
                     individual_session.commit()
                     print(f"[UPLOAD_LOG] ✅ Database commit successful for {file.filename}")
                     
+                    # Update years of experience and refresh category cache after successful upload
+                    update_resume_experience(individual_session, existing_resume.id)
+                    refresh_category_cache()
+                    
                     total_time = time.time() - file_start_time
                     print(f"[UPLOAD_LOG] 🏁 Processing completed for {file.filename} in {total_time:.2f}s")
                     
@@ -3954,6 +3958,10 @@ async def process_single_file(file):
                     print(f"[UPLOAD_LOG] ⏭️ Skipping normalized tables - no AI extraction data")
                     individual_session.commit()
                     print(f"[UPLOAD_LOG] ✅ Database commit successful for {file.filename}")
+                
+                # Update years of experience and refresh category cache after successful upload
+                update_resume_experience(individual_session, existing_resume.id)
+                refresh_category_cache()
                 
                 # Prepare response data
                 response_data = {
@@ -4452,9 +4460,13 @@ async def search_resumes(
     
     # Skills and qualifications
     technical_skills: Optional[str] = None,  # Comma-separated
+    skill_categories: Optional[str] = None,  # Comma-separated categories
     certifications: Optional[str] = None,    # Comma-separated
+    certification_categories: Optional[str] = None,  # Comma-separated categories
     licenses: Optional[str] = None,
     education_level: Optional[str] = None,
+    education_degrees: Optional[str] = None,  # Comma-separated degrees
+    education_fields: Optional[str] = None,   # Comma-separated fields
     
     # Location filters
     current_location: Optional[str] = None,
@@ -4470,6 +4482,7 @@ async def search_resumes(
     
     # Industry and company filters
     industry_experience: Optional[str] = None,
+    industry_categories: Optional[str] = None,  # Comma-separated categories
     current_company: Optional[str] = None,
     
     # AI search
@@ -4527,19 +4540,36 @@ async def search_resumes(
                     )
                 )
         if phone:
-            query = query.where(
-                or_(
-                    Resume.phone.ilike(f"%{phone}%"),
-                    Resume.alternative_phone.ilike(f"%{phone}%")
+            if AI_RESUME_SYSTEM_AVAILABLE:
+                query = query.where(
+                    or_(
+                        AIResume.phone.ilike(f"%{phone}%"),
+                        AIResume.alternative_phone.ilike(f"%{phone}%")
+                    )
                 )
-            )
+            else:
+                query = query.where(
+                    or_(
+                        Resume.phone.ilike(f"%{phone}%"),
+                        Resume.alternative_phone.ilike(f"%{phone}%")
+                    )
+                )
         if location or current_location:
             loc = location or current_location
-            query = query.where(Resume.address.ilike(f"%{loc}%"))
+            if AI_RESUME_SYSTEM_AVAILABLE:
+                query = query.where(AIResume.address.ilike(f"%{loc}%"))
+            else:
+                query = query.where(Resume.address.ilike(f"%{loc}%"))
         if years_experience_min:
-            query = query.where(Resume.years_experience >= years_experience_min)
+            if AI_RESUME_SYSTEM_AVAILABLE:
+                query = query.where(AIResume.years_experience >= years_experience_min)
+            else:
+                query = query.where(Resume.years_experience >= years_experience_min)
         if years_experience_max:
-            query = query.where(Resume.years_experience <= years_experience_max)
+            if AI_RESUME_SYSTEM_AVAILABLE:
+                query = query.where(AIResume.years_experience <= years_experience_max)
+            else:
+                query = query.where(Resume.years_experience <= years_experience_max)
         if seniority_level:
             query = query.where(Resume.seniority_level == seniority_level)
         if career_level:
@@ -4548,37 +4578,167 @@ async def search_resumes(
             query = query.where(Resume.management_experience == management_experience)
         if willing_to_relocate is not None or relocation_willing is not None:
             relocate = willing_to_relocate or relocation_willing
-            query = query.where(Resume.relocation == str(relocate).lower())
+            if AI_RESUME_SYSTEM_AVAILABLE:
+                query = query.where(AIResume.relocation.ilike(f"%{str(relocate).lower()}%"))
+            else:
+                query = query.where(Resume.relocation == str(relocate).lower())
         if willing_to_travel is not None:
             query = query.where(Resume.willing_to_travel == willing_to_travel)
         if remote_work_preference:
-            query = query.where(Resume.remote_work.ilike(f"%{remote_work_preference}%"))
+            if AI_RESUME_SYSTEM_AVAILABLE:
+                query = query.where(AIResume.remote_work.ilike(f"%{remote_work_preference}%"))
+            else:
+                query = query.where(Resume.remote_work.ilike(f"%{remote_work_preference}%"))
         if work_authorization:
-            query = query.where(Resume.work_authorization.ilike(f"%{work_authorization}%"))
+            if AI_RESUME_SYSTEM_AVAILABLE:
+                query = query.where(AIResume.work_authorization.ilike(f"%{work_authorization}%"))
+            else:
+                query = query.where(Resume.work_authorization.ilike(f"%{work_authorization}%"))
         
         # Skills and qualifications filters
         if technical_skills:
             skills_list = [skill.strip() for skill in technical_skills.split(',')]
             for skill in skills_list:
-                query = query.where(Resume.technical_skills.ilike(f"%{skill}%"))
+                if AI_RESUME_SYSTEM_AVAILABLE:
+                    query = query.where(
+                        or_(
+                            AIResume.technical_skills.ilike(f"%{skill}%"),
+                            AIResume.hands_on_skills.ilike(f"%{skill}%")
+                        )
+                    )
+                else:
+                    query = query.where(Resume.technical_skills.ilike(f"%{skill}%"))
+        
+        # Skill categories filter
+        if skill_categories:
+            categories_list = [cat.strip() for cat in skill_categories.split(',')]
+            skill_category_keywords = {
+                "Cement & Manufacturing": ["Cement", "Manufacturing", "Process Engineering", "Production", "Kiln Operations", "Clinker", "Grinding", "Packaging", "Quality Control", "Process Optimization"],
+                "Maintenance & Reliability": ["Maintenance", "Reliability", "Preventive Maintenance", "Predictive Maintenance", "Asset Management", "Equipment Maintenance", "CMMS", "Root Cause Analysis", "RCA", "Troubleshooting"],
+                "Electrical & Instrumentation": ["Electrical", "Instrumentation", "I&E", "Control Systems", "PLC", "SCADA", "Automation", "Electrical Systems", "Power Systems", "Motor Control"],
+                "Mechanical & Equipment": ["Mechanical", "Equipment", "Heavy Equipment", "Conveyors", "Crushers", "Mills", "Pumps", "Compressors", "Mechanical Systems", "Equipment Installation"],
+                "Aggregates & Mining": ["Aggregates", "Mining", "Quarry", "Crushing", "Screening", "Material Handling", "Bulk Material Handling", "Mine Planning", "Blasting", "Drilling"],
+                "Safety & Environmental": ["Safety", "Environmental", "OSHA", "MSHA", "Compliance", "Environmental Management", "Safety Management", "Risk Management", "Hazardous Materials", "Waste Management"],
+                "Sales & Business Development": ["Sales", "Business Development", "Client Relationship Management", "Market Analysis", "Customer Service", "Account Management", "Territory Management", "Sales Strategies", "Negotiating", "Presenting"],
+                "Management & Leadership": ["Management", "Leadership", "Plant Manager", "Operations Manager", "Supervisor", "Team Leadership", "Staff Management", "Strategic Planning", "Budgeting", "Project Management"],
+                "Quality & Process Control": ["Quality Control", "Process Control", "Six Sigma", "Lean Manufacturing", "ISO", "Auditing", "Continuous Improvement", "Process Improvement", "Statistical Process Control", "Quality Management"],
+                "Technical & Engineering": ["Engineering", "Technical", "AutoCAD", "Design", "Project Engineering", "Mechanical Engineering", "Electrical Engineering", "Process Engineering", "Civil Engineering", "Technical Analysis"]
+            }
+            
+            category_conditions = []
+            for category in categories_list:
+                if category in skill_category_keywords:
+                    keywords = skill_category_keywords[category]
+                    for keyword in keywords:
+                        if AI_RESUME_SYSTEM_AVAILABLE:
+                            category_conditions.append(
+                                or_(
+                                    AIResume.technical_skills.ilike(f"%{keyword}%"),
+                                    AIResume.hands_on_skills.ilike(f"%{keyword}%")
+                                )
+                            )
+                        else:
+                            category_conditions.append(Resume.technical_skills.ilike(f"%{keyword}%"))
+            
+            if category_conditions:
+                query = query.where(or_(*category_conditions))
+        
         if certifications:
             certs_list = [cert.strip() for cert in certifications.split(',')]
             for cert in certs_list:
-                query = query.where(Resume.certifications.ilike(f"%{cert}%"))
+                if AI_RESUME_SYSTEM_AVAILABLE:
+                    query = query.where(AIResume.certifications.ilike(f"%{cert}%"))
+                else:
+                    query = query.where(Resume.certifications.ilike(f"%{cert}%"))
+        
+        # Certification categories filter
+        if certification_categories:
+            categories_list = [cat.strip() for cat in certification_categories.split(',')]
+            cert_category_keywords = {
+                "Safety & Compliance": ["OSHA", "MSHA", "Safety", "Compliance", "Environmental", "CPR", "AED", "Safety Management", "Hazardous Materials", "Environmental Management"],
+                "Quality & Process": ["Six Sigma", "Lean", "ISO", "Quality Management", "Process Improvement", "ISO 9001", "ISO 14001", "Quality Control", "Auditing", "Continuous Improvement"],
+                "Engineering & Technical": ["Professional Engineer", "PE", "Engineering", "Technical", "AutoCAD", "Mechanical Engineering", "Electrical Engineering", "Process Engineering", "Civil Engineering"],
+                "Maintenance & Reliability": ["CMMS", "Maintenance", "Reliability", "Asset Management", "Total Productive Maintenance", "Predictive Maintenance", "Equipment Maintenance", "Root Cause Analysis"],
+                "Mining & Construction": ["MSHA", "Mining", "Construction", "Surface Foreman", "Methane Detection", "Blasting", "Quarry Operations", "Aggregates", "Cement Operations"],
+                "Management & Leadership": ["Leadership", "Management", "Training", "Coaching", "Team Building", "Project Management", "PMP", "Agile", "Scrum", "Operations Management"],
+                "Industry Specific": ["Water Wastewater", "Cement", "Aggregates", "Minerals", "Chemical", "Manufacturing", "Process Control", "Kiln Operations", "Grinding Operations"],
+                "Software & Technology": ["Software", "IT", "Computer", "Database", "ERP", "SAP", "Control Systems", "PLC", "SCADA", "Automation"]
+            }
+            
+            category_conditions = []
+            for category in categories_list:
+                if category in cert_category_keywords:
+                    keywords = cert_category_keywords[category]
+                    for keyword in keywords:
+                        if AI_RESUME_SYSTEM_AVAILABLE:
+                            category_conditions.append(AIResume.certifications.ilike(f"%{keyword}%"))
+                        else:
+                            category_conditions.append(Resume.certifications.ilike(f"%{keyword}%"))
+            
+            if category_conditions:
+                query = query.where(or_(*category_conditions))
         if licenses:
-            query = query.where(Resume.licenses.ilike(f"%{licenses}%"))
+            if AI_RESUME_SYSTEM_AVAILABLE:
+                query = query.where(AIResume.licenses.ilike(f"%{licenses}%"))
+            else:
+                query = query.where(Resume.licenses.ilike(f"%{licenses}%"))
         if education_level:
-            query = query.where(Resume.education_level == education_level)
+            if AI_RESUME_SYSTEM_AVAILABLE:
+                query = query.where(AIResume.education_level == education_level)
+            else:
+                query = query.where(Resume.education_level == education_level)
+        
+        # Education degrees filter
+        if education_degrees:
+            degrees_list = [degree.strip() for degree in education_degrees.split(',')]
+            degree_conditions = []
+            for degree in degrees_list:
+                if AI_RESUME_SYSTEM_AVAILABLE:
+                    # Join with aieducation table to filter by degree
+                    degree_conditions.append(
+                        AIResume.id.in_(
+                            select(AIEducation.resume_id).where(AIEducation.degree.ilike(f"%{degree}%"))
+                        )
+                    )
+                else:
+                    # For legacy Resume table, this would need to be implemented
+                    pass
+            if degree_conditions:
+                query = query.where(or_(*degree_conditions))
+        
+        # Education fields filter
+        if education_fields:
+            fields_list = [field.strip() for field in education_fields.split(',')]
+            field_conditions = []
+            for field in fields_list:
+                if AI_RESUME_SYSTEM_AVAILABLE:
+                    # Join with aieducation table to filter by field
+                    field_conditions.append(
+                        AIResume.id.in_(
+                            select(AIEducation.resume_id).where(AIEducation.field.ilike(f"%{field}%"))
+                        )
+                    )
+                else:
+                    # For legacy Resume table, this would need to be implemented
+                    pass
+            if field_conditions:
+                query = query.where(or_(*field_conditions))
         
         # Location filters
         if preferred_locations:
             locations_list = [loc.strip() for loc in preferred_locations.split(',')]
             for loc in locations_list:
-                query = query.where(Resume.preferred_locations.ilike(f"%{loc}%"))
+                if AI_RESUME_SYSTEM_AVAILABLE:
+                    query = query.where(AIResume.preferred_locations.ilike(f"%{loc}%"))
+                else:
+                    query = query.where(Resume.preferred_locations.ilike(f"%{loc}%"))
         if restricted_locations:
             restricted_list = [loc.strip() for loc in restricted_locations.split(',')]
             for loc in restricted_list:
-                query = query.where(~Resume.restricted_locations.ilike(f"%{loc}%"))
+                if AI_RESUME_SYSTEM_AVAILABLE:
+                    query = query.where(~AIResume.restricted_locations.ilike(f"%{loc}%"))
+                else:
+                    query = query.where(~Resume.restricted_locations.ilike(f"%{loc}%"))
         
         # Salary filters
         if current_salary_min:
@@ -4592,21 +4752,67 @@ async def search_resumes(
         
         # Industry and company filters
         if industry_experience:
-            query = query.where(Resume.recommended_industries.ilike(f"%{industry_experience}%"))
+            if AI_RESUME_SYSTEM_AVAILABLE:
+                query = query.where(AIResume.recommended_industries.ilike(f"%{industry_experience}%"))
+            else:
+                query = query.where(Resume.recommended_industries.ilike(f"%{industry_experience}%"))
+        
+        # Industry categories filter
+        if industry_categories:
+            categories_list = [cat.strip() for cat in industry_categories.split(',')]
+            industry_category_keywords = {
+                "Cement & Manufacturing": ["Cement", "Manufacturing", "Cement Manufacturing", "Cement & Aggregate", "Cement and Aggregates", "Cement Operations", "Kiln Operations", "Clinker Production", "Grinding Operations"],
+                "Aggregates & Mining": ["Aggregates", "Mining", "Agg", "Minerals", "Quarry Operations", "Crushing Operations", "Screening Operations", "Material Handling", "Bulk Material Handling", "Industrial Minerals"],
+                "Chemical & Materials": ["Chemical", "Chemicals", "Chemical, Lime and Stone", "Lime", "Magnesium", "Salt", "Chemical Additives", "Materials", "Bulk Solids Handling"],
+                "Construction & Infrastructure": ["Construction", "Infrastructure", "Building", "Commercial and Residential Construction", "Construction Equipment", "Construction Aggregates", "Heavy Construction"],
+                "Packaging & Processing": ["Packaging", "Processing", "Bulk Material Handling", "Material Processing", "Packaging Operations", "Processing Equipment"],
+                "Sales & Business": ["Sales", "Business Development", "Territory Sales", "Account Management", "Customer Service", "Market Analysis", "Commercial Operations"],
+                "Management & Operations": ["Plant Manager", "Operations Manager", "Site Manager", "Area Manager", "Production Manager", "Production Supervisor", "Shift Supervisor"],
+                "Engineering & Technical": ["Engineering", "Technical", "Process Engineering", "Reliability Engineering", "Field Service Engineering", "Technical Services", "Engineering Consulting"],
+                "Quality & Control": ["Quality Control", "Process Control", "Control Room", "Quality Management", "Process Optimization", "Statistical Process Control"],
+                "Environmental & Safety": ["Environmental", "Safety", "Environmental Management", "Safety Management", "Compliance", "Waste Management", "Hazardous Materials"]
+            }
+            
+            category_conditions = []
+            for category in categories_list:
+                if category in industry_category_keywords:
+                    keywords = industry_category_keywords[category]
+                    for keyword in keywords:
+                        if AI_RESUME_SYSTEM_AVAILABLE:
+                            category_conditions.append(AIResume.recommended_industries.ilike(f"%{keyword}%"))
+                        else:
+                            category_conditions.append(Resume.recommended_industries.ilike(f"%{keyword}%"))
+            
+            if category_conditions:
+                query = query.where(or_(*category_conditions))
+        
         if current_company:
-            query = query.where(Resume.current_company.ilike(f"%{current_company}%"))
+            if AI_RESUME_SYSTEM_AVAILABLE:
+                query = query.where(AIResume.previous_positions.ilike(f"%{current_company}%"))
+            else:
+                query = query.where(Resume.current_company.ilike(f"%{current_company}%"))
         
         # AI search filters
         if semantic_query:
             # For now, search in key fields - can be enhanced with AI later
-            query = query.where(
-                or_(
-                    Resume.technical_skills.ilike(f"%{semantic_query}%"),
-                    Resume.hands_on_skills.ilike(f"%{semantic_query}%"),
-                    Resume.previous_positions.ilike(f"%{semantic_query}%"),
-                    Resume.recommended_industries.ilike(f"%{semantic_query}%")
+            if AI_RESUME_SYSTEM_AVAILABLE:
+                query = query.where(
+                    or_(
+                        AIResume.technical_skills.ilike(f"%{semantic_query}%"),
+                        AIResume.hands_on_skills.ilike(f"%{semantic_query}%"),
+                        AIResume.previous_positions.ilike(f"%{semantic_query}%"),
+                        AIResume.recommended_industries.ilike(f"%{semantic_query}%")
+                    )
                 )
-            )
+            else:
+                query = query.where(
+                    or_(
+                        Resume.technical_skills.ilike(f"%{semantic_query}%"),
+                        Resume.hands_on_skills.ilike(f"%{semantic_query}%"),
+                        Resume.previous_positions.ilike(f"%{semantic_query}%"),
+                        Resume.recommended_industries.ilike(f"%{semantic_query}%")
+                    )
+                )
         # job_fit_score filtering skipped - requires job requirements context
         
         # Apply sorting
@@ -4636,36 +4842,71 @@ async def search_resumes(
             else:
                 query = query.order_by(Resume.created_at.desc())
         
+        # Get total count for pagination (before applying pagination)
+        if AI_RESUME_SYSTEM_AVAILABLE:
+            count_query = select(func.count()).select_from(query.subquery())
+        else:
+            count_query = select(func.count()).select_from(query.subquery())
+        total_count = session.exec(count_query).one()
+        
         # Apply pagination
         query = query.offset(skip).limit(limit)
         
         # Execute query
         resumes = session.exec(query).all()
         
-        # Get total count for pagination (with same filters)
-        if AI_RESUME_SYSTEM_AVAILABLE:
-            count_query = select(func.count(AIResume.id)).where(AIResume.is_latest_version == True)
-        else:
-            count_query = select(func.count(Resume.id)).where(Resume.is_latest_version == True)
-        # Apply same filters to count query
-        if name:
-            count_query = count_query.where(
-                or_(
-                    Resume.first_name.ilike(f"%{name}%"),
-                    Resume.last_name.ilike(f"%{name}%"),
-                    func.concat(Resume.first_name, ' ', Resume.last_name).ilike(f"%{name}%")
-                )
-            )
-        # Add other filters to count query as needed...
-        
-        total_count = session.exec(count_query).one()
+        # Enhance resumes with education and experience data
+        enhanced_resumes = []
+        for resume in resumes:
+            resume_dict = resume.__dict__.copy()
+            
+            # Get education data
+            if AI_RESUME_SYSTEM_AVAILABLE:
+                education_query = select(AIEducation).where(AIEducation.resume_id == resume.id)
+                education_records = session.exec(education_query).all()
+                resume_dict['education'] = [
+                    {
+                        'degree': edu.degree,
+                        'field': edu.field,
+                        'institution': edu.institution,
+                        'start_date': edu.start_date,
+                        'end_date': edu.end_date,
+                        'gpa': edu.gpa,
+                        'honors': edu.honors
+                    }
+                    for edu in education_records
+                ]
+                
+                # Get experience data
+                experience_query = select(AIExperience).where(AIExperience.resume_id == resume.id)
+                experience_records = session.exec(experience_query).all()
+                resume_dict['experience'] = [
+                    {
+                        'position': exp.position,
+                        'company': exp.company,
+                        'industry': exp.industry,
+                        'location': exp.location,
+                        'start_date': exp.start_date,
+                        'end_date': exp.end_date,
+                        'functions': exp.functions,
+                        'soft_skills': exp.soft_skills,
+                        'achievements': exp.achievements
+                    }
+                    for exp in experience_records
+                ]
+            else:
+                # For legacy Resume table, set empty arrays
+                resume_dict['education'] = []
+                resume_dict['experience'] = []
+            
+            enhanced_resumes.append(resume_dict)
         
         return {
-            "resumes": resumes,
+            "resumes": enhanced_resumes,
             "total_count": total_count,
             "skip": skip,
             "limit": limit,
-            "has_more": skip + len(resumes) < total_count,
+            "has_more": skip + len(enhanced_resumes) < total_count,
             "sort_by": sort_by
         }
         
@@ -4713,6 +4954,236 @@ async def semantic_search_resumes(
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Semantic search failed: {str(e)}")
+
+@app.get("/api/resume-suggestions")
+async def get_resume_suggestions(session: Session = Depends(get_session)):
+    """Get dynamic suggestions for skills, certifications, and locations based on actual resume data"""
+    try:
+        # Use cached categories for better performance
+        return get_cached_categories(session)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get suggestions: {str(e)}")
+
+# Global cache for categories
+_category_cache = {
+    "data": None,
+    "last_updated": None,
+    "resume_count": 0
+}
+
+def refresh_category_cache():
+    """Refresh the category cache when new resumes are added"""
+    global _category_cache
+    try:
+        _category_cache["data"] = None
+        _category_cache["last_updated"] = None
+        _category_cache["resume_count"] = 0
+        print("[CATEGORY_CACHE] Categories cache invalidated")
+        return True
+    except Exception as e:
+        print(f"[CATEGORY_CACHE] Error refreshing categories: {e}")
+        return False
+
+def calculate_years_experience_for_resume(session: Session, resume_id: int):
+    """Calculate years of experience for a specific resume using the database function"""
+    try:
+        result = session.exec(text("SELECT calculate_years_experience(:resume_id)"), {"resume_id": resume_id}).first()
+        if result:
+            return result[0] if isinstance(result, tuple) else result
+        return 0
+    except Exception as e:
+        print(f"[EXPERIENCE_CALC] Error calculating experience for resume {resume_id}: {e}")
+        return 0
+
+def update_resume_experience(session: Session, resume_id: int):
+    """Update the years_experience field for a specific resume"""
+    try:
+        years_exp = calculate_years_experience_for_resume(session, resume_id)
+        if AI_RESUME_SYSTEM_AVAILABLE:
+            resume = session.get(AIResume, resume_id)
+            if resume:
+                resume.years_experience = years_exp
+                session.add(resume)
+                session.commit()
+                print(f"[EXPERIENCE_CALC] Updated resume {resume_id} with {years_exp} years experience")
+        else:
+            resume = session.get(Resume, resume_id)
+            if resume:
+                resume.years_experience = years_exp
+                session.add(resume)
+                session.commit()
+                print(f"[EXPERIENCE_CALC] Updated resume {resume_id} with {years_exp} years experience")
+    except Exception as e:
+        print(f"[EXPERIENCE_CALC] Error updating experience for resume {resume_id}: {e}")
+        session.rollback()
+
+def get_cached_categories(session: Session):
+    """Get categories from cache or generate if needed"""
+    global _category_cache
+    
+    # Check if we need to refresh the cache
+    if AI_RESUME_SYSTEM_AVAILABLE:
+        current_resume_count = session.exec(select(AIResume).where(AIResume.is_latest_version == True)).all().__len__()
+    else:
+        current_resume_count = session.exec(select(Resume).where(Resume.is_latest_version == True)).all().__len__()
+    
+    if (_category_cache["data"] is None or 
+        _category_cache["resume_count"] != current_resume_count or
+        _category_cache["last_updated"] is None or
+        (datetime.now() - _category_cache["last_updated"]).seconds > 10800):  # 3 hour cache expiry
+        
+        print(f"[CATEGORY_CACHE] Generating new categories for {current_resume_count} resumes")
+        _category_cache["data"] = generate_categories(session)
+        _category_cache["last_updated"] = datetime.now()
+        _category_cache["resume_count"] = current_resume_count
+        print("[CATEGORY_CACHE] Categories generated and cached")
+    
+    return _category_cache["data"]
+
+def generate_categories(session: Session):
+    """Generate categories from resume data"""
+    from collections import Counter
+
+    # Use AIResume if available, otherwise Resume
+    if AI_RESUME_SYSTEM_AVAILABLE:
+        resumes = session.exec(select(AIResume).where(AIResume.is_latest_version == True)).all()
+    else:
+        resumes = session.exec(select(Resume).where(Resume.is_latest_version == True)).all()
+
+    # Aggregate skills
+    all_skills = []
+    all_certifications = []
+    all_industries = []
+    all_locations = []
+
+    for resume in resumes:
+        # Technical skills
+        if resume.technical_skills:
+            skills = [s.strip() for s in str(resume.technical_skills).split(',') if s.strip()]
+            all_skills.extend(skills)
+
+        # Hands-on skills (if available in AIResume)
+        if hasattr(resume, 'hands_on_skills') and resume.hands_on_skills:
+            skills = [s.strip() for s in str(resume.hands_on_skills).split(',') if s.strip()]
+            all_skills.extend(skills)
+
+        # Certifications
+        if resume.certifications and resume.certifications not in ['Not specified', 'None', '']:
+            certs = [c.strip() for c in str(resume.certifications).split(',') if c.strip()]
+            all_certifications.extend(certs)
+
+        # Industries
+        if hasattr(resume, 'recommended_industries') and resume.recommended_industries and resume.recommended_industries not in ['Not specified', 'None', '']:
+            industries = [i.strip() for i in str(resume.recommended_industries).split(',') if i.strip()]
+            all_industries.extend(industries)
+
+        # Locations
+        if hasattr(resume, 'preferred_locations') and resume.preferred_locations and resume.preferred_locations not in ['Not specified', 'None', 'Anywhere', '']:
+            locs = [l.strip() for l in str(resume.preferred_locations).split(',') if l.strip()]
+            all_locations.extend(locs)
+
+    # Count frequencies and get top items
+    skills_counter = Counter(all_skills)
+    certs_counter = Counter(all_certifications)
+    industries_counter = Counter(all_industries)
+    locations_counter = Counter(all_locations)
+
+    # Define skill categories based on actual job requirements from MasterTrackingBoard.csv
+    skill_categories = {
+        "Cement & Manufacturing": ["Cement", "Manufacturing", "Process Engineering", "Production", "Kiln Operations", "Clinker", "Grinding", "Packaging", "Quality Control", "Process Optimization"],
+        "Maintenance & Reliability": ["Maintenance", "Reliability", "Preventive Maintenance", "Predictive Maintenance", "Asset Management", "Equipment Maintenance", "CMMS", "Root Cause Analysis", "RCA", "Troubleshooting"],
+        "Electrical & Instrumentation": ["Electrical", "Instrumentation", "I&E", "Control Systems", "PLC", "SCADA", "Automation", "Electrical Systems", "Power Systems", "Motor Control"],
+        "Mechanical & Equipment": ["Mechanical", "Equipment", "Heavy Equipment", "Conveyors", "Crushers", "Mills", "Pumps", "Compressors", "Mechanical Systems", "Equipment Installation"],
+        "Aggregates & Mining": ["Aggregates", "Mining", "Quarry", "Crushing", "Screening", "Material Handling", "Bulk Material Handling", "Mine Planning", "Blasting", "Drilling"],
+        "Safety & Environmental": ["Safety", "Environmental", "OSHA", "MSHA", "Compliance", "Environmental Management", "Safety Management", "Risk Management", "Hazardous Materials", "Waste Management"],
+        "Sales & Business Development": ["Sales", "Business Development", "Client Relationship Management", "Market Analysis", "Customer Service", "Account Management", "Territory Management", "Sales Strategies", "Negotiating", "Presenting"],
+        "Management & Leadership": ["Management", "Leadership", "Plant Manager", "Operations Manager", "Supervisor", "Team Leadership", "Staff Management", "Strategic Planning", "Budgeting", "Project Management"],
+        "Quality & Process Control": ["Quality Control", "Process Control", "Six Sigma", "Lean Manufacturing", "ISO", "Auditing", "Continuous Improvement", "Process Improvement", "Statistical Process Control", "Quality Management"],
+        "Technical & Engineering": ["Engineering", "Technical", "AutoCAD", "Design", "Project Engineering", "Mechanical Engineering", "Electrical Engineering", "Process Engineering", "Civil Engineering", "Technical Analysis"]
+    }
+
+    # Define certification categories based on actual job requirements
+    cert_categories = {
+        "Safety & Compliance": ["OSHA", "MSHA", "Safety", "Compliance", "Environmental", "CPR", "AED", "Safety Management", "Hazardous Materials", "Environmental Management"],
+        "Quality & Process": ["Six Sigma", "Lean", "ISO", "Quality Management", "Process Improvement", "ISO 9001", "ISO 14001", "Quality Control", "Auditing", "Continuous Improvement"],
+        "Engineering & Technical": ["Professional Engineer", "PE", "Engineering", "Technical", "AutoCAD", "Mechanical Engineering", "Electrical Engineering", "Process Engineering", "Civil Engineering"],
+        "Maintenance & Reliability": ["CMMS", "Maintenance", "Reliability", "Asset Management", "Total Productive Maintenance", "Predictive Maintenance", "Equipment Maintenance", "Root Cause Analysis"],
+        "Mining & Construction": ["MSHA", "Mining", "Construction", "Surface Foreman", "Methane Detection", "Blasting", "Quarry Operations", "Aggregates", "Cement Operations"],
+        "Management & Leadership": ["Leadership", "Management", "Training", "Coaching", "Team Building", "Project Management", "PMP", "Agile", "Scrum", "Operations Management"],
+        "Industry Specific": ["Water Wastewater", "Cement", "Aggregates", "Minerals", "Chemical", "Manufacturing", "Process Control", "Kiln Operations", "Grinding Operations"],
+        "Software & Technology": ["Software", "IT", "Computer", "Database", "ERP", "SAP", "Control Systems", "PLC", "SCADA", "Automation"]
+    }
+
+    # Define industry categories based on actual job data from MasterTrackingBoard.csv
+    industry_categories = {
+        "Cement & Manufacturing": ["Cement", "Manufacturing", "Cement Manufacturing", "Cement & Aggregate", "Cement and Aggregates", "Cement Operations", "Kiln Operations", "Clinker Production", "Grinding Operations"],
+        "Aggregates & Mining": ["Aggregates", "Mining", "Agg", "Minerals", "Quarry Operations", "Crushing Operations", "Screening Operations", "Material Handling", "Bulk Material Handling", "Industrial Minerals"],
+        "Chemical & Materials": ["Chemical", "Chemicals", "Chemical, Lime and Stone", "Lime", "Magnesium", "Salt", "Chemical Additives", "Materials", "Bulk Solids Handling"],
+        "Construction & Infrastructure": ["Construction", "Infrastructure", "Building", "Commercial and Residential Construction", "Construction Equipment", "Construction Aggregates", "Heavy Construction"],
+        "Packaging & Processing": ["Packaging", "Processing", "Bulk Material Handling", "Material Processing", "Packaging Operations", "Processing Equipment"],
+        "Sales & Business": ["Sales", "Business Development", "Territory Sales", "Account Management", "Customer Service", "Market Analysis", "Commercial Operations"],
+        "Management & Operations": ["Plant Manager", "Operations Manager", "Site Manager", "Area Manager", "Production Manager", "Production Supervisor", "Shift Supervisor"],
+        "Engineering & Technical": ["Engineering", "Technical", "Process Engineering", "Reliability Engineering", "Field Service Engineering", "Technical Services", "Engineering Consulting"],
+        "Quality & Control": ["Quality Control", "Process Control", "Control Room", "Quality Management", "Process Optimization", "Statistical Process Control"],
+        "Environmental & Safety": ["Environmental", "Safety", "Environmental Management", "Safety Management", "Compliance", "Waste Management", "Hazardous Materials"]
+    }
+
+    # Categorize skills
+    categorized_skills = {}
+    for category, keywords in skill_categories.items():
+        category_skills = []
+        for skill, count in skills_counter.most_common():
+            if any(keyword.lower() in skill.lower() for keyword in keywords):
+                category_skills.append({"name": skill, "count": count})
+        if category_skills:
+            categorized_skills[category] = category_skills
+
+    # Categorize certifications
+    categorized_certs = {}
+    for category, keywords in cert_categories.items():
+        category_certs = []
+        for cert, count in certs_counter.most_common():
+            if any(keyword.lower() in cert.lower() for keyword in keywords):
+                category_certs.append({"name": cert, "count": count})
+        if category_certs:
+            categorized_certs[category] = category_certs
+
+    # Categorize industries
+    categorized_industries = {}
+    for category, keywords in industry_categories.items():
+        category_industries = []
+        for industry, count in industries_counter.most_common():
+            if any(keyword.lower() in industry.lower() for keyword in keywords):
+                category_industries.append({"name": industry, "count": count})
+        if category_industries:
+            categorized_industries[category] = category_industries
+
+        # Get education data
+        education_degrees = []
+        education_fields = []
+        
+        # Query education data from aieducation table
+        education_records = session.exec(select(AIEducation)).all()
+        for edu in education_records:
+            if edu.degree and edu.degree not in ['Not specified', 'None', '']:
+                education_degrees.append(edu.degree)
+            if edu.field and edu.field not in ['Not specified', 'None', '']:
+                education_fields.append(edu.field)
+        
+        # Count education frequencies
+        degrees_counter = Counter(education_degrees)
+        fields_counter = Counter(education_fields)
+
+        # Return categorized suggestions
+        return {
+            "skill_categories": categorized_skills,
+            "certification_categories": categorized_certs,
+            "industry_categories": categorized_industries,
+            "locations": [{"name": loc, "count": count} for loc, count in locations_counter.most_common(100)],
+            "education_degrees": [{"name": degree, "count": count} for degree, count in degrees_counter.most_common(50)],
+            "education_fields": [{"name": field, "count": count} for field, count in fields_counter.most_common(50)],
+            "total_resumes": len(resumes)
+        }
 
 @app.get("/api/resumes/skills-match")
 async def skills_match_resumes(

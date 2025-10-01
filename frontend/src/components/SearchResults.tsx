@@ -22,7 +22,17 @@ import {
   Calendar,
   User,
   Building,
-  Award
+  Award,
+  ChevronDown,
+  ChevronUp,
+  Shield,
+  Globe,
+  Home,
+  FileText,
+  Target,
+  CheckCircle,
+  AlertCircle,
+  Info
 } from 'lucide-react';
 
 interface AIResume {
@@ -75,6 +85,27 @@ interface AIResume {
   extraction_notes?: string;
   validation_notes?: string;
   job_fit_score?: number;
+  // Education and Experience data from related tables
+  education?: Array<{
+    degree?: string;
+    field?: string;
+    institution?: string;
+    start_date?: string;
+    end_date?: string;
+    gpa?: string;
+    honors?: string;
+  }>;
+  experience?: Array<{
+    position?: string;
+    company?: string;
+    industry?: string;
+    location?: string;
+    start_date?: string;
+    end_date?: string;
+    functions?: string;
+    soft_skills?: string;
+    achievements?: string;
+  }>;
 }
 
 interface SearchResultsProps {
@@ -103,6 +134,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [sortBy, setSortBy] = useState('relevance');
   const [selectedResumes, setSelectedResumes] = useState<number[]>([]);
+  const [expandedResumes, setExpandedResumes] = useState<Set<number>>(new Set());
 
   const formatSalary = (salary?: string) => {
     if (!salary) return 'Not specified';
@@ -138,124 +170,413 @@ const SearchResults: React.FC<SearchResultsProps> = ({
     setSelectedResumes([]);
   };
 
+  const toggleExpanded = (resumeId: number) => {
+    setExpandedResumes(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(resumeId)) {
+        newSet.delete(resumeId);
+      } else {
+        newSet.add(resumeId);
+      }
+      return newSet;
+    });
+  };
+
+  const getFieldValue = (value?: string, fallback: string = 'Not specified') => {
+    return value && value.trim() !== '' ? value : fallback;
+  };
+
+  const getConfidenceColor = (confidence?: number) => {
+    if (!confidence) return 'text-gray-500';
+    if (confidence >= 0.8) return 'text-green-600';
+    if (confidence >= 0.6) return 'text-yellow-600';
+    return 'text-red-600';
+  };
+
+  const getConfidenceIcon = (confidence?: number) => {
+    if (!confidence) return <AlertCircle className="h-4 w-4" />;
+    if (confidence >= 0.8) return <CheckCircle className="h-4 w-4" />;
+    if (confidence >= 0.6) return <Info className="h-4 w-4" />;
+    return <AlertCircle className="h-4 w-4" />;
+  };
+
   const ListView = () => (
-    <div className="space-y-4">
-      {resumes.map((resume) => (
-        <Card key={resume.id} className="hover:shadow-md transition-shadow">
-          <CardContent className="p-6">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-3">
+    <div className="space-y-6">
+      {resumes.map((resume) => {
+        const isExpanded = expandedResumes.has(resume.id);
+        
+        return (
+          <Card key={resume.id} className="hover:shadow-lg transition-all duration-200 border-l-4 border-l-blue-500">
+            <CardContent className="p-6">
+              {/* Header Section */}
+              <div className="flex items-start justify-between mb-6">
+                <div className="flex items-center gap-3">
                   <input
                     type="checkbox"
                     checked={selectedResumes.includes(resume.id)}
                     onChange={() => toggleResumeSelection(resume.id)}
                     className="rounded"
                   />
-                  <h3 className="text-lg font-semibold">
-                    {resume.first_name} {resume.last_name}
-                  </h3>
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900">
+                      {resume.first_name} {resume.last_name}
+                    </h3>
+                    <p className="text-sm text-gray-600">ID: {resume.candidate_id}</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-2">
                   {resume.job_fit_score && (
                     <Badge className={getJobFitColor(resume.job_fit_score)}>
                       {resume.job_fit_score}% Match
                     </Badge>
                   )}
                   {resume.ai_extraction_confidence && (
-                    <Badge variant="outline">
-                      {Math.round(resume.ai_extraction_confidence * 100)}% Confidence
+                    <Badge variant="outline" className="flex items-center gap-1">
+                      {getConfidenceIcon(resume.ai_extraction_confidence)}
+                      <span className={getConfidenceColor(resume.ai_extraction_confidence)}>
+                        {Math.round(resume.ai_extraction_confidence * 100)}%
+                      </span>
                     </Badge>
                   )}
                 </div>
+              </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
+              {/* Essential Information Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                {/* Contact Information */}
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    Contact Info
+                  </h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center gap-2">
+                      <Mail className="h-3 w-3 text-blue-600" />
+                      <span className="truncate">{getFieldValue(resume.primary_email)}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Phone className="h-3 w-3 text-blue-600" />
+                      <span>{getFieldValue(resume.phone)}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-3 w-3 text-blue-600" />
+                      <span className="truncate">{getFieldValue(resume.address)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Professional Profile */}
+                <div className="bg-green-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-green-900 mb-3 flex items-center gap-2">
                     <Briefcase className="h-4 w-4" />
-                    <span>{resume.years_experience || 'N/A'} years experience</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <Building className="h-4 w-4" />
-                    <span>{resume.current_company || 'Not specified'}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <MapPin className="h-4 w-4" />
-                    <span>{resume.address || 'Location not specified'}</span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  <div>
-                    <span className="text-sm font-medium text-gray-700">Technical Skills:</span>
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {resume.technical_skills?.split(',').slice(0, 5).map((skill, index) => (
-                        <Badge key={index} variant="secondary" className="text-xs">
-                          {skill.trim()}
-                        </Badge>
-                      ))}
-                      {resume.technical_skills && resume.technical_skills.split(',').length > 5 && (
-                        <Badge variant="outline" className="text-xs">
-                          +{resume.technical_skills.split(',').length - 5} more
-                        </Badge>
-                      )}
+                    Professional
+                  </h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center gap-2">
+                      <Star className="h-3 w-3 text-green-600" />
+                      <span>{resume.years_experience || 'N/A'} years experience</span>
                     </div>
-                  </div>
-                  <div>
-                    <span className="text-sm font-medium text-gray-700">Certifications:</span>
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {resume.certifications?.split(',').slice(0, 3).map((cert, index) => (
-                        <Badge key={index} variant="outline" className="text-xs">
-                          {cert.trim()}
-                        </Badge>
-                      ))}
+                    <div className="flex items-center gap-2">
+                      <Building className="h-3 w-3 text-green-600" />
+                      <span className="truncate">{getFieldValue(resume.current_company)}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Target className="h-3 w-3 text-green-600" />
+                      <span className="truncate">{getFieldValue(resume.recommended_industries)}</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4 text-sm text-gray-600">
-                  <div className="flex items-center gap-1">
-                    <DollarSign className="h-4 w-4" />
-                    <span>Current: {formatSalary(resume.current_salary)}</span>
+                {/* Work Authorization */}
+                <div className="bg-purple-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-purple-900 mb-3 flex items-center gap-2">
+                    <Shield className="h-4 w-4" />
+                    Authorization
+                  </h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center gap-2">
+                      <Globe className="h-3 w-3 text-purple-600" />
+                      <span>{getFieldValue(resume.citizenship)}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="h-3 w-3 text-purple-600" />
+                      <span>{getFieldValue(resume.work_authorization)}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Home className="h-3 w-3 text-purple-600" />
+                      <span>{getFieldValue(resume.relocation)}</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1">
+                </div>
+
+                {/* Compensation */}
+                <div className="bg-yellow-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-yellow-900 mb-3 flex items-center gap-2">
                     <DollarSign className="h-4 w-4" />
-                    <span>Expected: {formatSalary(resume.expected_salary)}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Calendar className="h-4 w-4" />
-                    <span>Updated: {formatDate(resume.updated_at)}</span>
+                    Compensation
+                  </h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="text-yellow-600">Current:</span>
+                      <span>{formatSalary(resume.current_salary)}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-yellow-600">Expected:</span>
+                      <span>{formatSalary(resume.expected_salary)}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-3 w-3 text-yellow-600" />
+                      <span>Updated: {formatDate(resume.updated_at)}</span>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div className="flex flex-col gap-2 ml-4">
+              {/* Skills and Certifications */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                    <Award className="h-4 w-4" />
+                    Technical Skills
+                  </h4>
+                  <div className="flex flex-wrap gap-1">
+                    {resume.technical_skills?.split(',').slice(0, 8).map((skill, index) => (
+                      <Badge key={index} variant="secondary" className="text-xs">
+                        {skill.trim()}
+                      </Badge>
+                    ))}
+                    {resume.technical_skills && resume.technical_skills.split(',').length > 8 && (
+                      <Badge variant="outline" className="text-xs">
+                        +{resume.technical_skills.split(',').length - 8} more
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                    <GraduationCap className="h-4 w-4" />
+                    Certifications
+                  </h4>
+                  <div className="flex flex-wrap gap-1">
+                    {resume.certifications?.split(',').slice(0, 5).map((cert, index) => (
+                      <Badge key={index} variant="outline" className="text-xs">
+                        {cert.trim()}
+                      </Badge>
+                    ))}
+                    {resume.certifications && resume.certifications.split(',').length > 5 && (
+                      <Badge variant="outline" className="text-xs">
+                        +{resume.certifications.split(',').length - 5} more
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Expanded View */}
+              {isExpanded && (
+                <div className="border-t pt-6 space-y-6">
+                  {/* Education Section */}
+                  {resume.education && resume.education.length > 0 && (
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                      <h4 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
+                        <GraduationCap className="h-4 w-4" />
+                        Education
+                      </h4>
+                      <div className="space-y-3">
+                        {resume.education.map((edu, index) => (
+                          <div key={index} className="bg-white p-3 rounded border">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <p className="font-medium">{getFieldValue(edu.degree)} in {getFieldValue(edu.field)}</p>
+                                <p className="text-sm text-gray-600">{getFieldValue(edu.institution)}</p>
+                                {edu.gpa && <p className="text-sm text-gray-500">GPA: {edu.gpa}</p>}
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                {edu.start_date} - {edu.end_date || 'Present'}
+                              </div>
+                            </div>
+                            {edu.honors && (
+                              <p className="text-sm text-blue-600 mt-1">{edu.honors}</p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Experience Section */}
+                  {resume.experience && resume.experience.length > 0 && (
+                    <div className="bg-green-50 p-4 rounded-lg">
+                      <h4 className="font-semibold text-green-900 mb-3 flex items-center gap-2">
+                        <Briefcase className="h-4 w-4" />
+                        Work Experience
+                      </h4>
+                      <div className="space-y-3">
+                        {resume.experience.map((exp, index) => (
+                          <div key={index} className="bg-white p-3 rounded border">
+                            <div className="flex justify-between items-start mb-2">
+                              <div>
+                                <p className="font-medium">{getFieldValue(exp.position)}</p>
+                                <p className="text-sm text-gray-600">{getFieldValue(exp.company)}</p>
+                                <p className="text-sm text-gray-500">{getFieldValue(exp.industry)} • {getFieldValue(exp.location)}</p>
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                {exp.start_date} - {exp.end_date || 'Present'}
+                              </div>
+                            </div>
+                            {exp.functions && (
+                              <p className="text-sm text-gray-700 mb-2">{exp.functions}</p>
+                            )}
+                            {exp.achievements && (
+                              <p className="text-sm text-green-600">{exp.achievements}</p>
+                            )}
+                            {exp.soft_skills && (
+                              <div className="flex flex-wrap gap-1 mt-2">
+                                {exp.soft_skills.split(',').map((skill, skillIndex) => (
+                                  <Badge key={skillIndex} variant="outline" className="text-xs">
+                                    {skill.trim()}
+                                  </Badge>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Additional Information */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Work Preferences */}
+                    <div className="bg-purple-50 p-4 rounded-lg">
+                      <h4 className="font-semibold text-purple-900 mb-3">Work Preferences</h4>
+                      <div className="space-y-2 text-sm">
+                        <div><span className="font-medium">Remote Work:</span> {getFieldValue(resume.remote_work)}</div>
+                        <div><span className="font-medium">Preferred Locations:</span> {getFieldValue(resume.preferred_locations)}</div>
+                        <div><span className="font-medium">Restricted Locations:</span> {getFieldValue(resume.restricted_locations)}</div>
+                        <div><span className="font-medium">Homeowner/Renter:</span> {getFieldValue(resume.homeowner_renter)}</div>
+                      </div>
+                    </div>
+
+                    {/* Job Search Info */}
+                    <div className="bg-orange-50 p-4 rounded-lg">
+                      <h4 className="font-semibold text-orange-900 mb-3">Job Search Info</h4>
+                      <div className="space-y-2 text-sm">
+                        <div><span className="font-medium">Reason for Looking:</span> {getFieldValue(resume.reason_for_looking)}</div>
+                        <div><span className="font-medium">Reason for Leaving:</span> {getFieldValue(resume.reason_for_leaving)}</div>
+                        <div><span className="font-medium">Previous Positions:</span> {getFieldValue(resume.previous_positions)}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Recruiter Notes */}
+                  {(resume.special_notes || resume.screening_comments || resume.candidate_concerns) && (
+                    <div className="bg-red-50 p-4 rounded-lg">
+                      <h4 className="font-semibold text-red-900 mb-3">Recruiter Notes</h4>
+                      <div className="space-y-2 text-sm">
+                        {resume.special_notes && (
+                          <div><span className="font-medium">Special Notes:</span> {resume.special_notes}</div>
+                        )}
+                        {resume.screening_comments && (
+                          <div><span className="font-medium">Screening Comments:</span> {resume.screening_comments}</div>
+                        )}
+                        {resume.candidate_concerns && (
+                          <div><span className="font-medium">Candidate Concerns:</span> {resume.candidate_concerns}</div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* AI Processing Info */}
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h4 className="font-semibold text-gray-900 mb-3">AI Processing Information</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <span className="font-medium">Extraction Model:</span> {getFieldValue(resume.ai_extraction_model)}
+                      </div>
+                      <div>
+                        <span className="font-medium">Validation Model:</span> {getFieldValue(resume.ai_validation_model)}
+                      </div>
+                      <div>
+                        <span className="font-medium">Validation Confidence:</span> 
+                        <span className={getConfidenceColor(resume.ai_validation_confidence)}>
+                          {resume.ai_validation_confidence ? `${Math.round(resume.ai_validation_confidence * 100)}%` : 'N/A'}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="font-medium">Version:</span> {resume.version_number}
+                      </div>
+                    </div>
+                    {resume.extraction_notes && (
+                      <div className="mt-2 text-sm">
+                        <span className="font-medium">Extraction Notes:</span> {resume.extraction_notes}
+                      </div>
+                    )}
+                    {resume.validation_notes && (
+                      <div className="mt-2 text-sm">
+                        <span className="font-medium">Validation Notes:</span> {resume.validation_notes}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex items-center justify-between pt-4 border-t">
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    onClick={() => onViewResume(resume)}
+                    className="flex items-center gap-2"
+                  >
+                    <Eye className="h-4 w-4" />
+                    View Full
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => onContactResume(resume)}
+                    className="flex items-center gap-2"
+                  >
+                    <Mail className="h-4 w-4" />
+                    Contact
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => onAddToShortlist(resume)}
+                    className="flex items-center gap-2"
+                  >
+                    <Heart className="h-4 w-4" />
+                    Shortlist
+                  </Button>
+                </div>
+                
                 <Button
                   size="sm"
-                  onClick={() => onViewResume(resume)}
-                  className="w-full"
+                  variant="ghost"
+                  onClick={() => toggleExpanded(resume.id)}
+                  className="flex items-center gap-2"
                 >
-                  <Eye className="h-4 w-4 mr-2" />
-                  View
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => onContactResume(resume)}
-                >
-                  <Mail className="h-4 w-4 mr-2" />
-                  Contact
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => onAddToShortlist(resume)}
-                >
-                  <Heart className="h-4 w-4 mr-2" />
-                  Shortlist
+                  {isExpanded ? (
+                    <>
+                      <ChevronUp className="h-4 w-4" />
+                      Show Less
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="h-4 w-4" />
+                      View More
+                    </>
+                  )}
                 </Button>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+            </CardContent>
+          </Card>
+        );
+      })}
     </div>
   );
 
