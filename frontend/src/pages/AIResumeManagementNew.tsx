@@ -1085,7 +1085,7 @@ const AIResumeManagementNew: React.FC = () => {
 
                 {/* Inline Processing Progress */}
                 {showProgressModal && (
-                  <Card className="mt-6 border-l-4 border-l-blue-500 shadow-lg">
+                  <Card className="mt-6 border-l-4 border-l-blue-500">
                     <CardHeader className="bg-blue-50 pb-3">
                       <CardTitle className="text-xl font-semibold text-blue-900 flex items-center gap-2">
                         <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
@@ -1281,8 +1281,8 @@ const AIResumeManagementNew: React.FC = () => {
           >
             <div className="fixed inset-0 bg-black/50" />
             <div className="relative z-50 w-full h-full">
-              <DialogContent 
-                className={`${isDetailsMaximized ? 'w-full h-full max-w-none max-h-none' : 'max-w-[95vw] sm:max-w-4xl max-h-[80vh]'} overflow-hidden bg-white border-0 mx-2 sm:mx-4 flex flex-col ${isDetailsMinimized ? 'hidden' : ''}`}
+              <DialogContent
+                className={`${isDetailsMaximized ? 'w-full h-full max-w-none max-h-none' : 'max-w-[95vw] sm:max-w-4xl max-h-[80vh]'} overflow-hidden bg-white border-0 !shadow-none mx-2 sm:mx-4 flex flex-col ${isDetailsMinimized ? 'hidden' : ''}`}
                 onClick={(e) => e.stopPropagation()}
               >
                 {/* Custom Title Bar */}
@@ -1580,8 +1580,8 @@ const AIResumeManagementNew: React.FC = () => {
           >
             <div className="fixed inset-0 bg-black/50" />
             <div className="relative z-50 w-full h-full">
-              <DialogContent 
-                className={`${isEditMaximized ? 'w-full h-full max-w-none max-h-none' : 'max-w-[95vw] sm:max-w-4xl max-h-[90vh]'} overflow-hidden bg-white border-0 mx-2 sm:mx-4 flex flex-col ${isEditMinimized ? 'hidden' : ''}`}
+              <DialogContent
+                className={`${isEditMaximized ? 'w-full h-full max-w-none max-h-none' : 'max-w-[95vw] sm:max-w-4xl max-h-[90vh]'} overflow-hidden bg-white border-0 !shadow-none mx-2 sm:mx-4 flex flex-col ${isEditMinimized ? 'hidden' : ''}`}
                 onClick={(e) => e.stopPropagation()}
               >
                 {/* Custom Title Bar */}
@@ -1661,7 +1661,7 @@ const AIResumeManagementNew: React.FC = () => {
                 <div className="overflow-y-auto flex-1 p-6 min-h-0">
                   <div className="space-y-8 px-2">
               {/* Basic Information */}
-              <Card className="border-l-4 border-l-blue-500 shadow-md">
+              <Card className="border-l-4 border-l-blue-500">
                 <CardHeader className="bg-blue-50 pb-3">
                   <CardTitle className="text-xl font-semibold text-blue-900 flex items-center gap-2">
                     <User className="h-5 w-5" />
@@ -1734,7 +1734,7 @@ const AIResumeManagementNew: React.FC = () => {
               </Card>
 
               {/* Work Authorization */}
-              <Card className="border-l-4 border-l-green-500 shadow-md">
+              <Card className="border-l-4 border-l-green-500">
                 <CardHeader className="bg-green-50 pb-3">
                   <CardTitle className="text-xl font-semibold text-green-900 flex items-center gap-2">
                     <Building className="h-5 w-5" />
@@ -1784,7 +1784,7 @@ const AIResumeManagementNew: React.FC = () => {
               </Card>
 
               {/* Compensation & Preferences */}
-              <Card className="border-l-4 border-l-yellow-500 shadow-md">
+              <Card className="border-l-4 border-l-yellow-500">
                 <CardHeader className="bg-yellow-50 pb-3">
                   <CardTitle className="text-xl font-semibold text-yellow-900 flex items-center gap-2">
                     <DollarSign className="h-5 w-5" />
@@ -1846,7 +1846,7 @@ const AIResumeManagementNew: React.FC = () => {
               </Card>
 
               {/* Skills & Experience */}
-              <Card className="border-l-4 border-l-purple-500 shadow-md">
+              <Card className="border-l-4 border-l-purple-500">
                 <CardHeader className="bg-purple-50 pb-3">
                   <CardTitle className="text-xl font-semibold text-purple-900 flex items-center gap-2">
                     <Target className="h-5 w-5" />
@@ -1906,7 +1906,7 @@ const AIResumeManagementNew: React.FC = () => {
               </Card>
 
               {/* Work Experience */}
-              <Card className="border-l-4 border-l-indigo-500 shadow-md">
+              <Card className="border-l-4 border-l-indigo-500">
                 <CardHeader className="bg-indigo-50 pb-3">
                   <CardTitle className="text-xl font-semibold text-indigo-900 flex items-center gap-2">
                     <Briefcase className="h-5 w-5" />
@@ -1916,7 +1916,7 @@ const AIResumeManagementNew: React.FC = () => {
                 <CardContent className="pt-6">
                   <div className="space-y-6">
                   {editExperienceData.map((exp, index) => (
-                    <div key={exp.id} className="border-2 border-indigo-200 rounded-lg p-6 bg-gradient-to-r from-indigo-50 to-white shadow-sm">
+                    <div key={exp.id} className="border-2 border-indigo-200 rounded-lg p-6 bg-gradient-to-r from-indigo-50 to-white">
                       <h4 className="font-semibold mb-4 text-indigo-800 flex items-center gap-2">
                         <span className="bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full text-sm font-medium">
                           #{index + 1}
@@ -2042,7 +2042,7 @@ const AIResumeManagementNew: React.FC = () => {
               </Card>
 
               {/* Job Search Information */}
-              <Card className="border-l-4 border-l-orange-500 shadow-md">
+              <Card className="border-l-4 border-l-orange-500">
                 <CardHeader className="bg-orange-50 pb-3">
                   <CardTitle className="text-xl font-semibold text-orange-900 flex items-center gap-2">
                     <Search className="h-5 w-5" />
@@ -2083,7 +2083,7 @@ const AIResumeManagementNew: React.FC = () => {
               </Card>
 
               {/* Location Preferences */}
-              <Card className="border-l-4 border-l-teal-500 shadow-md">
+              <Card className="border-l-4 border-l-teal-500">
                 <CardHeader className="bg-teal-50 pb-3">
                   <CardTitle className="text-xl font-semibold text-teal-900 flex items-center gap-2">
                     <MapPin className="h-5 w-5" />
@@ -2131,7 +2131,7 @@ const AIResumeManagementNew: React.FC = () => {
               </Card>
 
               {/* Recruiter Notes */}
-              <Card className="border-l-4 border-l-pink-500 shadow-md">
+              <Card className="border-l-4 border-l-pink-500">
                 <CardHeader className="bg-pink-50 pb-3">
                   <CardTitle className="text-xl font-semibold text-pink-900 flex items-center gap-2">
                     <FileText className="h-5 w-5" />
