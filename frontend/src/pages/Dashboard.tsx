@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { apiClient, SystemStatus } from '@/lib/api';
 import AuthModal from '@/components/AuthModal';
@@ -8,11 +8,12 @@ import { useAuth } from '@/hooks/useAuth';
 export default function Dashboard() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { authStatus, checkAuth } = useAuth();
+  const { authStatus, checkAuth, resetAuth } = useAuth();
   const [status, setStatus] = useState<SystemStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
 
   // Handle OAuth callback
   useEffect(() => {
@@ -71,18 +72,30 @@ export default function Dashboard() {
     fetchStatus();
   }, []);
 
-  // Show auth modal if not authenticated
-  useEffect(() => {
-    if (authStatus && !authStatus.authenticated && !showAuthModal) {
-      setShowAuthModal(true);
-    }
-  }, [authStatus, showAuthModal]);
+  // Removed automatic auth modal - authentication is now on-demand only
 
-  const handleAuthSuccess = () => {
+  const handleAuthSuccess = useCallback(() => {
     setShowAuthModal(false);
     // Re-check auth status
     checkAuth();
-  };
+  }, [checkAuth]);
+
+  const handleResetAuth = useCallback(async () => {
+    if (window.confirm('Are you sure you want to reset your Google Drive authentication? This will require you to log in again.')) {
+      setIsResetting(true);
+      try {
+        const success = await resetAuth();
+        if (success) {
+          // Show auth modal after successful reset
+          setShowAuthModal(true);
+        }
+      } catch (err) {
+        console.error('Reset auth failed:', err);
+      } finally {
+        setIsResetting(false);
+      }
+    }
+  }, [resetAuth]);
 
   if (loading) {
     return (
@@ -225,6 +238,30 @@ export default function Dashboard() {
                   className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors text-sm"
                 >
                   Connect Google Drive
+                </button>
+              )}
+              {authStatus?.authenticated && (
+                <button
+                  onClick={handleResetAuth}
+                  disabled={isResetting}
+                  className="w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm flex items-center justify-center"
+                >
+                  {isResetting ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Resetting...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                      Reset Google Authentication
+                    </>
+                  )}
                 </button>
               )}
             </div>

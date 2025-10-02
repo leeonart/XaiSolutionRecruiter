@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import HelpSection from '@/components/HelpSection';
+import { useGoogleDriveRequirement } from '@/hooks/useGoogleDriveRequirement.tsx';
 
 interface JobFile {
   jobId: string;
@@ -23,6 +24,7 @@ interface DriveConfig {
 }
 
 export default function JobFileOrganizer() {
+  const { GoogleDriveGuard } = useGoogleDriveRequirement();
   const [loading, setLoading] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState<any>(null);
@@ -191,7 +193,8 @@ export default function JobFileOrganizer() {
   };
 
   return (
-    <div className="space-y-6">
+    <GoogleDriveGuard feature="Job File Organizer">
+      <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Job Description Download (ZIP)</h1>
         <p className="mt-2 text-gray-600">
@@ -478,6 +481,7 @@ export default function JobFileOrganizer() {
           "Download files as ZIP archives or proceed to AI processing"
         ]}
       />
-    </div>
+      </div>
+    </GoogleDriveGuard>
   );
 }

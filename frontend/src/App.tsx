@@ -16,6 +16,7 @@ import AIResumeManagementNew from '@/pages/AIResumeManagementNew';
 import Operations from '@/pages/Operations';
 import Settings from '@/pages/Settings';
 import AuthCallback from '@/pages/AuthCallback';
+import Privacy from '@/pages/Privacy';
 import { SettingsProvider } from '@/contexts/SettingsContext';
 import { apiClient } from '@/lib/api';
 
@@ -77,6 +78,7 @@ function App() {
           <OAuthCallbackHandler />
           <Routes>
             <Route path="/auth-callback" element={<AuthCallback />} />
+            <Route path="/privacy" element={<Privacy />} />
             <Route path="/*" element={
               <Layout>
                 <Routes>

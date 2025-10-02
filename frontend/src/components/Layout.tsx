@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import Footer from './Footer';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -175,6 +176,9 @@ export default function Layout({ children }: LayoutProps) {
             </div>
           </div>
         </main>
+
+        {/* Footer */}
+        <Footer />
       </div>
     </div>
   );

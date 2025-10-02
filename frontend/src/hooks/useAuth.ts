@@ -15,6 +15,7 @@ export interface AuthContextType {
   error: string | null;
   checkAuth: () => Promise<void>;
   refreshAuth: () => Promise<boolean>;
+  resetAuth: () => Promise<boolean>;
   clearError: () => void;
 }
 
@@ -30,7 +31,7 @@ export function useAuth(): AuthContextType {
       const authResponse = await apiClient.getAuthStatus();
       
       // Convert AuthResponse to AuthStatus
-      const authStatus: AuthStatus = {
+      const newAuthStatus: AuthStatus = {
         authenticated: authResponse.authenticated ?? authResponse.success,
         message: authResponse.message,
         status: authResponse.status as AuthStatus['status'] || 'error',
@@ -38,28 +39,36 @@ export function useAuth(): AuthContextType {
         needs_reauth: authResponse.needs_reauth
       };
       
-      setAuthStatus(authStatus);
+      // Only update state if the auth status has actually changed
+      const hasAuthStatusChanged = !authStatus || 
+        authStatus.authenticated !== newAuthStatus.authenticated ||
+        authStatus.status !== newAuthStatus.status ||
+        authStatus.message !== newAuthStatus.message;
       
-      // If authentication is expired or invalid, try to refresh automatically
-      if (authResponse.needs_refresh && (authResponse.status === 'expired' || authResponse.status === 'invalid')) {
-        console.log('Authentication needs refresh, attempting automatic refresh...');
-        const refreshResult = await apiClient.refreshAuth();
+      if (hasAuthStatusChanged) {
+        setAuthStatus(newAuthStatus);
         
-        if (refreshResult.success) {
-          console.log('Authentication refreshed successfully');
-          setAuthStatus({
-            authenticated: true,
-            message: refreshResult.message,
-            status: 'active' as const,
-            needs_refresh: false,
-            needs_reauth: false
-          });
-        } else {
-          console.log('Automatic refresh failed, user needs to re-authenticate');
-          setAuthStatus({
-            ...authStatus,
-            needs_reauth: true
-          });
+        // If authentication is expired or invalid, try to refresh automatically
+        if (authResponse.needs_refresh && (authResponse.status === 'expired' || authResponse.status === 'invalid')) {
+          console.log('Authentication needs refresh, attempting automatic refresh...');
+          const refreshResult = await apiClient.refreshAuth();
+          
+          if (refreshResult.success) {
+            console.log('Authentication refreshed successfully');
+            setAuthStatus({
+              authenticated: true,
+              message: refreshResult.message,
+              status: 'active' as const,
+              needs_refresh: false,
+              needs_reauth: false
+            });
+          } else {
+            console.log('Automatic refresh failed, user needs to re-authenticate');
+            setAuthStatus({
+              ...newAuthStatus,
+              needs_reauth: true
+            });
+          }
         }
       }
     } catch (err: any) {
@@ -73,7 +82,7 @@ export function useAuth(): AuthContextType {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [authStatus]);
 
   const refreshAuth = useCallback(async (): Promise<boolean> => {
     try {
@@ -112,6 +121,39 @@ export function useAuth(): AuthContextType {
     }
   }, []);
 
+  const resetAuth = useCallback(async (): Promise<boolean> => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const result = await apiClient.resetAuth();
+      
+      if (result.success) {
+        setAuthStatus({
+          authenticated: false,
+          message: result.message,
+          status: 'missing',
+          needs_reauth: true
+        });
+        return true;
+      } else {
+        setError(result.message || 'Failed to reset authentication');
+        return false;
+      }
+    } catch (err: any) {
+      console.error('Auth reset failed:', err);
+      setError(err.message || 'Failed to reset authentication');
+      setAuthStatus({
+        authenticated: false,
+        message: 'Failed to reset authentication',
+        status: 'error',
+        needs_reauth: true
+      });
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   const clearError = useCallback(() => {
     setError(null);
   }, []);
@@ -121,16 +163,16 @@ export function useAuth(): AuthContextType {
     checkAuth();
   }, [checkAuth]);
 
-  // Set up periodic auth checks (every 5 minutes)
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (authStatus?.authenticated) {
-        checkAuth();
-      }
-    }, 5 * 60 * 1000); // 5 minutes
+  // Temporarily disable periodic auth checks to prevent twitching
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     if (authStatus?.authenticated && !isLoading) {
+  //       checkAuth();
+  //     }
+  //   }, 10 * 60 * 1000); // 10 minutes
 
-    return () => clearInterval(interval);
-  }, [authStatus?.authenticated, checkAuth]);
+  //   return () => clearInterval(interval);
+  // }, [authStatus?.authenticated, isLoading, checkAuth]);
 
   return {
     authStatus,
@@ -138,6 +180,7 @@ export function useAuth(): AuthContextType {
     error,
     checkAuth,
     refreshAuth,
+    resetAuth,
     clearError
   };
 }

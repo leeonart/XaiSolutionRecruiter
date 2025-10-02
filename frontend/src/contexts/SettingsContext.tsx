@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { apiClient } from '@/lib/api';
 
 export interface SettingsContextType {
@@ -7,6 +7,7 @@ export interface SettingsContextType {
   availableAiAgents: string[];
   availableModels: string[];
   isLoading: boolean;
+  isLoadingModels: boolean;
   error: string | null;
   setAiAgent: (agent: string, model?: string) => Promise<boolean>;
   testAiAgent: (agent: string, model?: string) => Promise<{success: boolean, message: string}>;
@@ -35,6 +36,7 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
   const [availableAiAgents, setAvailableAiAgents] = useState<string[]>(['grok', 'gemini', 'deepseek', 'openai', 'qwen', 'zai']);
   const [availableModels, setAvailableModels] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingModels, setIsLoadingModels] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Load settings from localStorage on mount
@@ -143,15 +145,30 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     }
   };
 
-  const loadModels = async (agent: string): Promise<void> => {
+  const getDefaultModels = (agent: string): string[] => {
+    const defaultModels: { [key: string]: string[] } = {
+      'openai': ['gpt-4', 'gpt-4-turbo', 'gpt-3.5-turbo'],
+      'grok': ['grok-beta'],
+      'gemini': ['gemini-pro', 'gemini-pro-vision'],
+      'deepseek': ['deepseek-chat'],
+      'qwen': ['qwen-turbo'],
+      'zai': ['zai-large']
+    };
+    return defaultModels[agent] || ['default'];
+  };
+
+  const loadModels = useCallback(async (agent: string): Promise<void> => {
+    setIsLoadingModels(true);
     try {
       const result = await apiClient.getAiModels(agent);
-      setAvailableModels(result.models);
+      setAvailableModels(result.models || getDefaultModels(agent));
     } catch (err: any) {
       console.error('Failed to load models:', err);
-      setAvailableModels([]);
+      setAvailableModels(getDefaultModels(agent));
+    } finally {
+      setIsLoadingModels(false);
     }
-  };
+  }, []);
 
   const refreshSettings = async (): Promise<void> => {
     await loadSettings();
@@ -225,6 +242,7 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     availableAiAgents,
     availableModels,
     isLoading,
+    isLoadingModels,
     error,
     setAiAgent,
     testAiAgent,

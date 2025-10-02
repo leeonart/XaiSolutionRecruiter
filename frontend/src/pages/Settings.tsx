@@ -4,13 +4,14 @@ import { useSettings } from '@/contexts/SettingsContext';
 import HelpSection from '@/components/HelpSection';
 
 export default function Settings() {
-  const { 
-    currentAiAgent, 
+  const {
+    currentAiAgent,
     currentModel,
-    availableAiAgents, 
-    availableModels, 
-    isLoading, 
-    error, 
+    availableAiAgents,
+    availableModels,
+    isLoading,
+    isLoadingModels,
+    error,
     setAiAgent, 
     testAiAgent,
     loadModels,
@@ -191,8 +192,11 @@ export default function Settings() {
                   </option>
                 ))}
               </select>
-              {availableModels.length === 0 && (
-                <p className="text-xs text-gray-500 mt-1">Loading models...</p>
+              {isLoadingModels && (
+                <p className="text-xs text-blue-500 mt-1">Loading models...</p>
+              )}
+              {availableModels.length === 0 && !isLoadingModels && (
+                <p className="text-xs text-gray-500 mt-1">No models available</p>
               )}
             </div>
           </div>

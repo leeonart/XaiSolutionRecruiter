@@ -6,8 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import HelpSection from '@/components/HelpSection';
+import { useGoogleDriveRequirement } from '@/hooks/useGoogleDriveRequirement.tsx';
 
 export default function JobDescriptionDownloads() {
+  const { GoogleDriveGuard } = useGoogleDriveRequirement();
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
@@ -55,7 +57,8 @@ export default function JobDescriptionDownloads() {
   };
 
   return (
-    <div className="space-y-6">
+    <GoogleDriveGuard feature="Job Description Downloads">
+      <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Job Description Downloads (MTB)</h1>
         <p className="mt-2 text-gray-600">
@@ -243,7 +246,8 @@ export default function JobDescriptionDownloads() {
           "Review the download report and proceed to 'AI Job Processing (JSON)'"
         ]}
       />
-    </div>
+      </div>
+    </GoogleDriveGuard>
   );
 }
 

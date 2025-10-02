@@ -7445,6 +7445,35 @@ async def handle_auth_callback_post(code: str = Form(...)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Authentication callback failed: {str(e)}")
 
+@app.post("/api/auth-reset")
+async def reset_auth():
+    """Reset Google Drive authentication by clearing stored credentials"""
+    try:
+        import os
+        from modules.gdrive_operations import get_credentials_file
+        
+        # Get the credentials file path
+        creds_file = get_credentials_file()
+        
+        # Remove the credentials file if it exists
+        if os.path.exists(creds_file):
+            os.remove(creds_file)
+            return {
+                "success": True,
+                "message": "Google Drive authentication has been reset. Please re-authenticate to continue.",
+                "authenticated": False,
+                "status": "reset"
+            }
+        else:
+            return {
+                "success": True,
+                "message": "No stored credentials found. Authentication is already reset.",
+                "authenticated": False,
+                "status": "already_reset"
+            }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to reset authentication: {str(e)}")
+
 @app.get("/api/ai-agents")
 async def get_ai_agents():
     """Get available AI agents"""

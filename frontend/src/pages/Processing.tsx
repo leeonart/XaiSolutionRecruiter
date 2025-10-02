@@ -1,10 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { apiClient } from '@/lib/api';
 import MtbFilterDropdown from '@/components/MtbFilterDropdown';
 import SalaryInput from '@/components/SalaryInput';
 import HelpSection from '@/components/HelpSection';
+import { useGoogleDriveRequirement } from '@/hooks/useGoogleDriveRequirement.tsx';
 
 export default function Processing() {
+  const { requireAuth, GoogleDriveGuard } = useGoogleDriveRequirement();
   const [activeTab, setActiveTab] = useState<'mtb' | 'jobs'>('mtb');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
@@ -57,6 +59,10 @@ export default function Processing() {
   }, [activeTab]);
 
   const handleMTBProcess = async () => {
+    // Check if Google Drive authentication is required
+    const canProceed = await requireAuth('Master Tracking Board Processing');
+    if (!canProceed) return;
+
     setLoading(true);
     setError(null);
     setStatusMessage('Starting MTB processing...');
@@ -109,6 +115,10 @@ export default function Processing() {
   };
 
   const handleJobProcess = async () => {
+    // Check if Google Drive authentication is required
+    const canProceed = await requireAuth('Job Processing');
+    if (!canProceed) return;
+
     setLoading(true);
     setError(null);
     try {

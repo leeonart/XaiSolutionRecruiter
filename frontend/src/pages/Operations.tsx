@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react';
 import { apiClient } from '@/lib/api';
 import { useSettings } from '@/contexts/SettingsContext';
 import HelpSection from '@/components/HelpSection';
+import { useGoogleDriveRequirement } from '@/hooks/useGoogleDriveRequirement.tsx';
 
 export default function Operations() {
+  const { requireAuth } = useGoogleDriveRequirement();
   const { currentAiAgent } = useSettings();
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
@@ -40,6 +42,12 @@ export default function Operations() {
   }, [currentAiAgent]);
 
   const handleOperation = async (operation: string) => {
+    // Check if Google Drive authentication is required for Google Sheets operations
+    if (operation === 'mtb' || operation === 'pipeline') {
+      const canProceed = await requireAuth('Advanced Operations');
+      if (!canProceed) return;
+    }
+
     setLoading(true);
     setError(null);
     setResult(null);
