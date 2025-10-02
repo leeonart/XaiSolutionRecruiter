@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Slider } from '@/components/ui/slider';
+// import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -310,23 +310,25 @@ const AdvancedSearchFilters: React.FC<AdvancedSearchFiltersProps> = ({
                   <div className="space-y-2">
                     <div className="flex items-center space-x-2">
                       <span className="text-sm text-gray-600">Min:</span>
-                      <Slider
-                        value={[filters.yearsExperienceMin || 0]}
-                        onValueChange={(value) => handleFilterChange('yearsExperienceMin', value[0])}
+                      <Input
+                        type="number"
+                        value={filters.yearsExperienceMin || 0}
+                        onChange={(e) => handleFilterChange('yearsExperienceMin', parseInt(e.target.value) || 0)}
+                        min={0}
                         max={20}
-                        step={1}
-                        className="flex-1"
+                        className="w-20"
                       />
                       <span>{filters.yearsExperienceMin || 0} years</span>
                     </div>
                     <div className="flex items-center space-x-2">
                       <span className="text-sm text-gray-600">Max:</span>
-                      <Slider
-                        value={[filters.yearsExperienceMax || 20]}
-                        onValueChange={(value) => handleFilterChange('yearsExperienceMax', value[0])}
+                      <Input
+                        type="number"
+                        value={filters.yearsExperienceMax || 20}
+                        onChange={(e) => handleFilterChange('yearsExperienceMax', parseInt(e.target.value) || 20)}
+                        min={0}
                         max={20}
-                        step={1}
-                        className="flex-1"
+                        className="w-20"
                       />
                       <span>{filters.yearsExperienceMax || 20} years</span>
                     </div>
@@ -713,9 +715,11 @@ const AdvancedSearchFilters: React.FC<AdvancedSearchFiltersProps> = ({
             <div>
               <Label>Job Fit Score (Minimum)</Label>
               <div className="px-3">
-                <Slider
-                  value={[filters.jobFitScore || 0]}
-                  onValueChange={([value]) => handleFilterChange('jobFitScore', value)}
+                <Input
+                  type="number"
+                  value={filters.jobFitScore || 0}
+                  onChange={(e) => handleFilterChange('jobFitScore', parseInt(e.target.value) || 0)}
+                  min={0}
                   max={100}
                   step={5}
                   className="w-full"

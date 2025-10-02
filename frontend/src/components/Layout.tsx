@@ -43,11 +43,6 @@ const navigation = [
     tooltip: 'Select specific job files and manage downloads'
   },
   { 
-    name: 'Job Recovery & Search', 
-    href: '/job-recovery',
-    tooltip: 'Find misplaced job files and cross-folder search functionality'
-  },
-  { 
     name: 'MTB Management', 
     href: '/mtb-management',
     tooltip: 'Master Tracking Board synchronization and job status management'

@@ -9,6 +9,13 @@ interface MTBSyncData {
   jobs_updated: number;
   jobs_marked_inactive: number;
   category_changes: number;
+  jobs_changed_to_x: Array<{
+    job_id: string;
+    old_category: string;
+    company: string;
+    position: string;
+    reason: string;
+  }>;
   message: string;
 }
 
@@ -285,7 +292,7 @@ export default function MTBManagement() {
 
           {syncData && (
             <div className="space-y-4">
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
                 <div className="bg-gray-50 p-4 rounded">
                   <h3 className="font-semibold text-gray-700">Jobs Found</h3>
                   <p className="text-2xl font-bold text-blue-600">{syncData.jobs_found}</p>
@@ -306,6 +313,10 @@ export default function MTBManagement() {
                   <h3 className="font-semibold text-gray-700">Category Changes</h3>
                   <p className="text-2xl font-bold text-purple-600">{syncData.category_changes}</p>
                 </div>
+                <div className="bg-gray-50 p-4 rounded">
+                  <h3 className="font-semibold text-gray-700">Changed to X</h3>
+                  <p className="text-2xl font-bold text-gray-600">{syncData.jobs_changed_to_x ? syncData.jobs_changed_to_x.length : 0}</p>
+                </div>
               </div>
 
               <div className="text-sm text-gray-600">
@@ -313,6 +324,73 @@ export default function MTBManagement() {
                 <p><strong>Duration:</strong> {syncData.duration_seconds.toFixed(2)} seconds</p>
                 <p><strong>Message:</strong> {syncData.message}</p>
               </div>
+
+              {/* Jobs Changed to X (Closed) */}
+              {syncData.jobs_changed_to_x && syncData.jobs_changed_to_x.length > 0 && (
+                <div className="mt-6">
+                  <h3 className="text-lg font-semibold text-red-700 mb-4">
+                    Jobs Changed to X (Closed) - {syncData.jobs_changed_to_x.length} jobs
+                  </h3>
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <p className="text-sm text-red-700 mb-3">
+                      The following jobs were not found in the current MTB and have been marked as closed (X):
+                    </p>
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-red-200">
+                        <thead className="bg-red-100">
+                          <tr>
+                            <th className="px-3 py-2 text-left text-xs font-medium text-red-700 uppercase tracking-wider">
+                              Job ID
+                            </th>
+                            <th className="px-3 py-2 text-left text-xs font-medium text-red-700 uppercase tracking-wider">
+                              Company
+                            </th>
+                            <th className="px-3 py-2 text-left text-xs font-medium text-red-700 uppercase tracking-wider">
+                              Position
+                            </th>
+                            <th className="px-3 py-2 text-left text-xs font-medium text-red-700 uppercase tracking-wider">
+                              Old Category
+                            </th>
+                            <th className="px-3 py-2 text-left text-xs font-medium text-red-700 uppercase tracking-wider">
+                              Reason
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-red-200">
+                          {syncData.jobs_changed_to_x.map((job, index) => (
+                            <tr key={index}>
+                              <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {job.job_id}
+                              </td>
+                              <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-700">
+                                {job.company}
+                              </td>
+                              <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-700">
+                                {job.position}
+                              </td>
+                              <td className="px-3 py-2 whitespace-nowrap">
+                                <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                  job.old_category === 'AA' ? 'bg-red-100 text-red-800' :
+                                  job.old_category === 'A' ? 'bg-orange-100 text-orange-800' :
+                                  job.old_category === 'B' ? 'bg-yellow-100 text-yellow-800' :
+                                  job.old_category === 'C' ? 'bg-blue-100 text-blue-800' :
+                                  job.old_category === 'D' ? 'bg-purple-100 text-purple-800' :
+                                  'bg-gray-100 text-gray-800'
+                                }`}>
+                                  {job.old_category}
+                                </span>
+                              </td>
+                              <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-700">
+                                {job.reason}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
