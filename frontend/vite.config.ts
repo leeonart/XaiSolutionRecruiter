@@ -16,7 +16,7 @@ export default defineConfig({
     allowedHosts: ['localhost', 'xai.eastus.cloudapp.azure.com', 'frontend', 'all'],
     proxy: {
       '/api': {
-        target: 'http://newcompleteworking-backend-1:8000',
+        target: 'http://localhost:8000',
         changeOrigin: true,
         secure: false,
         ws: true,

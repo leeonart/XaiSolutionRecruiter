@@ -23,6 +23,11 @@ const navigation = [
     tooltip: 'Comprehensive resume processing, upload, and AI matching'
   },
   { 
+    name: 'Candidates Search', 
+    href: '/candidates-search',
+    tooltip: 'Search and manage candidate database with advanced filters'
+  },
+  { 
     name: 'Matches', 
     href: '/matches',
     tooltip: 'View job-resume matching results and ratings'

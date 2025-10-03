@@ -47,6 +47,7 @@ services:
       - ./config.py:/app/config.py
       - ./credentials:/app/credentials
       - ./data:/app/data:rw
+      - ./config_ai_agent.txt:/app/config_ai_agent.txt
       - ./output:/app/output:rw
       - ./temp:/app/temp:rw
     command: >

@@ -11,9 +11,9 @@ export interface SettingsContextType {
   error: string | null;
   setAiAgent: (agent: string, model?: string) => Promise<boolean>;
   testAiAgent: (agent: string, model?: string) => Promise<{success: boolean, message: string}>;
+  loadModels: (agent: string) => Promise<string[]>;
   refreshSettings: () => Promise<void>;
   syncWithBackend: () => Promise<{success: boolean, message: string, previousAgent?: string}>;
-  loadModels: (agent: string) => Promise<void>;
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -54,17 +54,16 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
       setCurrentAiAgent(agents.current_agent);
       setAvailableAiAgents(agents.available_agents);
       
+      // Set the current model from backend response
+      if (agents.current_model && agents.current_model !== 'default') {
+        setCurrentModel(agents.current_model);
+        localStorage.setItem('ai_model', agents.current_model);
+      }
+      
       // Update localStorage to match backend
       localStorage.setItem('ai_agent', agents.current_agent);
       
-      // Load models for current agent
-      await loadModels(agents.current_agent);
-      
-      // Set model from localStorage if available, but backend takes precedence
-      const savedModel = localStorage.getItem('ai_model');
-      if (savedModel && savedModel !== '') {
-        setCurrentModel(savedModel);
-      }
+      // Load models for current agent - will be loaded when needed
       
     } catch (err: any) {
       console.error('Failed to load settings:', err);
@@ -106,7 +105,7 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
         localStorage.setItem('ai_agent', agent);
         
         // Refresh models for the new agent
-        await loadModels(agent);
+        // Models will be loaded when needed
         
         return true;
       } else {
@@ -157,14 +156,27 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     return defaultModels[agent] || ['default'];
   };
 
-  const loadModels = useCallback(async (agent: string): Promise<void> => {
-    setIsLoadingModels(true);
+
+  const loadModels = useCallback(async (agent: string): Promise<string[]> => {
     try {
-      const result = await apiClient.getAiModels(agent);
-      setAvailableModels(result.models || getDefaultModels(agent));
+      setIsLoadingModels(true);
+      setError(null);
+      
+      const response = await fetch(`/api/ai-models/${agent}`);
+      const data = await response.json();
+      
+      if (data.models && data.models.length > 0) {
+        setAvailableModels(data.models);
+        return data.models;
+      } else {
+        setAvailableModels([]);
+        return [];
+      }
     } catch (err: any) {
       console.error('Failed to load models:', err);
-      setAvailableModels(getDefaultModels(agent));
+      setError(err.message || 'Failed to load models');
+      setAvailableModels([]);
+      return [];
     } finally {
       setIsLoadingModels(false);
     }
@@ -186,47 +198,33 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
       setAvailableAiAgents(agents.available_agents);
       localStorage.setItem('ai_agent', agents.current_agent);
       
-      // Load models for current agent
-      await loadModels(agents.current_agent);
+      // Set the current model from backend response
+      const currentModel = agents.current_model || 'default';
+      setCurrentModel(currentModel);
+      localStorage.setItem('ai_model', currentModel);
       
-      // Get the current model from backend by testing the agent
-      try {
-        const testResult = await apiClient.testAiAgent(agents.current_agent);
-        const currentModel = testResult.model || 'default';
-        setCurrentModel(currentModel);
-        localStorage.setItem('ai_model', currentModel);
-        
-        const agentChanged = previousAgent !== agents.current_agent;
-        const modelChanged = previousModel !== currentModel;
-        
-        let message = `Synced successfully! Current: ${agents.current_agent.toUpperCase()}`;
-        if (currentModel && currentModel !== 'default') {
-          message += ` (${currentModel})`;
-        }
-        
-        if (agentChanged) {
-          message += ` - Agent changed from ${previousAgent.toUpperCase()}`;
-        }
-        if (modelChanged) {
-          message += ` - Model changed from ${previousModel || 'default'}`;
-        }
-        
-        return {
-          success: true,
-          message,
-          previousAgent
-        };
-      } catch (testErr) {
-        // If test fails, still return success but with limited info
-        const agentChanged = previousAgent !== agents.current_agent;
-        return {
-          success: true,
-          message: agentChanged 
-            ? `Synced successfully! Agent changed from ${previousAgent.toUpperCase()} to ${agents.current_agent.toUpperCase()}`
-            : `Synced successfully! Current agent: ${agents.current_agent.toUpperCase()}`,
-          previousAgent
-        };
+      // Load models for current agent - will be loaded when needed
+      
+      const agentChanged = previousAgent !== agents.current_agent;
+      const modelChanged = previousModel !== currentModel;
+      
+      let message = `Synced successfully! Current: ${agents.current_agent.toUpperCase()}`;
+      if (currentModel && currentModel !== 'default') {
+        message += ` (${currentModel})`;
       }
+      
+      if (agentChanged) {
+        message += ` - Agent changed from ${previousAgent.toUpperCase()}`;
+      }
+      if (modelChanged) {
+        message += ` - Model changed from ${previousModel || 'default'}`;
+      }
+      
+      return {
+        success: true,
+        message,
+        previousAgent
+      };
     } catch (err: any) {
       console.error('Failed to sync with backend:', err);
       return {
@@ -246,9 +244,9 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     error,
     setAiAgent,
     testAiAgent,
+    loadModels,
     refreshSettings,
     syncWithBackend,
-    loadModels
   };
 
   return (

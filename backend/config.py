@@ -6,32 +6,34 @@ DEFAULT_AI_AGENT = os.getenv("DEFAULT_AI_AGENT", "openai")
 # Available models for each AI agent
 AVAILABLE_MODELS = {
     "openai": [
-        "gpt-5",
-        "gpt-5-mini",
-        "gpt-5-nano",
-        "gpt-5-chat-latest",
-        "gpt-4",
+        "gpt-4o",
+        "gpt-4o-mini",
         "gpt-4-turbo",
+        "gpt-4",
         "gpt-3.5-turbo",
         "gpt-3.5-turbo-16k"
     ],
     "grok": [
-        "grok-beta",
-        "grok-2",
-        "grok-4-fast-reasoning"
+        "grok-1",
+        "grok-2"
     ],
     "gemini": [
+        "gemini-1.5-pro",
+        "gemini-1.5-flash",
         "gemini-pro",
         "gemini-pro-vision"
     ],
     "deepseek": [
         "deepseek-chat",
-        "deepseek-coder"
+        "deepseek-coder",
+        "deepseek-v2.5"
     ],
     "qwen": [
-        "qwen-turbo",
+        "qwen-max",
         "qwen-plus",
-        "qwen-max"
+        "qwen-turbo",
+        "qwen2.5-72b-instruct",
+        "qwen2.5-32b-instruct"
     ],
     "zai": [
         "zai-chat"
@@ -39,7 +41,7 @@ AVAILABLE_MODELS = {
 }
 
 # OpenAI Configuration
-OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-5-mini")
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
 

@@ -2,6 +2,35 @@ import json
 import os
 from datetime import datetime
 from typing import Dict, Any, List
+import math
+
+class SafeJSONEncoder(json.JSONEncoder):
+    """Custom JSON encoder that handles NaN, Infinity, and other non-JSON values"""
+    def encode(self, obj):
+        # Convert NaN, Infinity, -Infinity to null
+        if isinstance(obj, float):
+            if math.isnan(obj):
+                return 'null'
+            elif math.isinf(obj):
+                return 'null'
+        elif isinstance(obj, dict):
+            return super().encode({k: self._safe_value(v) for k, v in obj.items()})
+        elif isinstance(obj, list):
+            return super().encode([self._safe_value(item) for item in obj])
+        return super().encode(obj)
+    
+    def _safe_value(self, value):
+        """Convert unsafe values to JSON-safe alternatives"""
+        if isinstance(value, float):
+            if math.isnan(value):
+                return None
+            elif math.isinf(value):
+                return None
+        elif isinstance(value, dict):
+            return {k: self._safe_value(v) for k, v in value.items()}
+        elif isinstance(value, list):
+            return [self._safe_value(item) for item in value]
+        return value
 
 class FinalOptimizer:
     def __init__(self, input_file: str):
@@ -173,6 +202,19 @@ class FinalOptimizer:
 
         return ordered_job
 
+    def _clean_nan_values(self, obj):
+        """Recursively clean NaN values from nested data structures"""
+        if isinstance(obj, dict):
+            return {k: self._clean_nan_values(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [self._clean_nan_values(item) for item in obj]
+        elif isinstance(obj, float):
+            if math.isnan(obj):
+                return None
+            elif math.isinf(obj):
+                return None
+        return obj
+
     def run_optimization(self) -> str:
         """
         Runs the optimization process on the loaded JSON data and saves back to original file.
@@ -186,11 +228,14 @@ class FinalOptimizer:
         else:
             raise ValueError("The input JSON file must be a list of jobs or contain a 'jobs' key with a list.")
 
+        # Clean NaN values from the optimized jobs
+        cleaned_jobs = self._clean_nan_values(optimized_jobs)
+
         # Save the transformed data back to the original file (overwrite)
         with open(self.input_file, 'w', encoding='utf-8') as f:
-            json.dump(optimized_jobs, f, indent=2, ensure_ascii=False)
+            json.dump(cleaned_jobs, f, indent=2, ensure_ascii=False, cls=SafeJSONEncoder)
 
-        print(f"Successfully optimized {len(optimized_jobs)} jobs")
+        print(f"Successfully optimized {len(cleaned_jobs)} jobs")
         print(f"Original file updated: {self.input_file}")
 
         return self.input_file

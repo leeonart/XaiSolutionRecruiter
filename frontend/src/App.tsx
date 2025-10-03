@@ -12,6 +12,7 @@ import MTBManagement from '@/pages/MTBManagement';
 import ResumeManagement from '@/pages/ResumeManagement';
 import AIResumeManagement from '@/pages/AIResumeManagement';
 import AIResumeManagementNew from '@/pages/AIResumeManagementNew';
+import CandidatesSearch from '@/pages/CandidatesSearch';
 import Operations from '@/pages/Operations';
 import Settings from '@/pages/Settings';
 import AuthCallback from '@/pages/AuthCallback';
@@ -35,6 +36,7 @@ function App() {
               <Route path="/mtb-management" element={<MTBManagement />} />
               <Route path="/job-processing" element={<JobProcessing />} />
               <Route path="/resume-management" element={<AIResumeManagementNew />} />
+              <Route path="/candidates-search" element={<CandidatesSearch />} />
               <Route path="/operations" element={<Operations />} />
               <Route path="/settings" element={<Settings />} />
             </Routes>

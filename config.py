@@ -86,12 +86,12 @@ def load_gemini_api_key():
 # Grok API
 GROK_API_KEY = load_api_key("GROK_API_KEY")
 GROK_BASE_URL = os.getenv("GROK_BASE_URL", "https://api.x.ai/v1")
-GROK_MODEL = os.getenv("GROK_MODEL", "grok-beta")
+GROK_MODEL = os.getenv("GROK_MODEL", "grok-1")
 
 # Gemini API
 GEMINI_API_KEY = load_api_key("GEMINI_API_KEY")
 GEMINI_BASE_URL = os.getenv("GEMINI_BASE_URL", "https://generativelanguage.googleapis.com/v1beta")
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-pro")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-1.5-pro")
 
 # Deepseek API
 DEEPSEEK_API_KEY = load_api_key("DEEPSEEK_API_KEY")
@@ -101,12 +101,12 @@ DEEPSEEK_MODEL = os.getenv("DEEPSEEK_MODEL", "deepseek-chat")
 # OpenAI API
 OPENAI_API_KEY = load_api_key("OPENAI_API_KEY")
 OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
-OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-5-mini")
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
  
 # Qwen API
 QWEN_API_KEY = load_api_key("DASHSCOPE_API_KEY")
 QWEN_BASE_URL = os.getenv("QWEN_BASE_URL", "https://dashscope-intl.aliyuncs.com/compatible-mode/v1")
-QWEN_MODEL = os.getenv("QWEN_MODEL", "qwen2.5-72b")
+QWEN_MODEL = os.getenv("QWEN_MODEL", "qwen-max")
  
 # Z.ai API (OpenAI-compatible)
 ZAI_API_KEY = load_api_key("ZAI_API_KEY")
@@ -117,58 +117,66 @@ ZAI_MODEL = os.getenv("ZAI_MODEL", "glm-4-32b-0414-128k")
 # Claude API (Anthropic)
 CLAUDE_API_KEY = load_api_key("CLAUDE_API_KEY")
 CLAUDE_BASE_URL = os.getenv("CLAUDE_BASE_URL", "https://api.anthropic.com/v1")
-CLAUDE_MODEL = os.getenv("CLAUDE_MODEL", "claude-opus-4.1")
+CLAUDE_MODEL = os.getenv("CLAUDE_MODEL", "claude-3-5-sonnet-20241022")
 
 # Available models for each AI agent (most recent publicly available models as of late 2025)
 AVAILABLE_MODELS = {
     "grok": [
-        "grok-beta",
         "grok-3",
         "grok-4",
-        "grok-4-fast-reasoning",
-        "grok-2",
-        "grok-1",
-        "grok-0.5"
+        "grok-4-fast"
     ],
     "gemini": [
+        "gemini-1.5-pro",
+        "gemini-1.5-flash",
+        "gemini-pro",
+        "gemini-pro-vision",
         "gemini-2.5-pro",
         "gemini-2.5-flash",
-        "gemini-2.5-flash-lite",
-        "gemini-2.5-flash-image-preview"
+        "gemini-2.5-flash-image"
     ],
     "deepseek": [
         "deepseek-chat",
         "deepseek-coder",
-        "deepseek-chat-67b",
-        "deepseek-coder-33b"
+        "deepseek-v2.5",
+        "deepseek-v3.2-exp"
     ],
     "openai": [
-        "gpt-5",
-        "gpt-5-mini",
-        "gpt-5-nano",
-        "gpt-5-chat-latest",
-        "gpt-4",
+        "gpt-4o",
+        "gpt-4o-mini",
         "gpt-4-turbo",
+        "gpt-4",
         "gpt-3.5-turbo",
-        "gpt-3.5-turbo-16k"
+        "gpt-3.5-turbo-16k",
+        "gpt-5",
+        "gpt-5-nano",
+        "gpt-oss-120b",
+        "gpt-image-1"
     ],
     "qwen": [
-        "qwen2.5-72b",
-        "qwen2.5-32b",
-        "qwen2.5-14b",
-        "qwen2.5-7b"
+        "qwen-max",
+        "qwen-plus",
+        "qwen-turbo",
+        "qwen-turbo-latest",
+        "qwen2.5-72b-instruct",
+        "qwen2.5-32b-instruct",
+        "qwen3-asr-flash"
     ],
     "zai": [
         "glm-4-32b-0414-128k",
         "glm-4-9b-chat",
         "glm-3-turbo",
-        "chatglm3-6b"
+        "chatglm3-6b",
+        "glm-4.6",
+        "glm-4.5v"
     ],
     "claude": [
-        "claude-opus-4.1",
-        "claude-sonnet-4",
-        "claude-opus-4",
-        "claude-sonnet-3.7"
+        "claude-3-5-sonnet-20241022",
+        "claude-3-5-haiku-20241022",
+        "claude-3-opus-20240229",
+        "claude-3-sonnet-20240229",
+        "claude-4.5-sonnet",
+        "claude-4.1-opus"
     ]
 }
 

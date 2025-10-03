@@ -20,6 +20,7 @@ import asyncio
 from datetime import datetime, date
 from pathlib import Path
 from collections import defaultdict
+import pandas as pd
 
 # Add parent directory to path for imports
 parent_dir = Path(__file__).parent.parent.parent
@@ -6267,14 +6268,72 @@ async def process_jobs(
                 # If we can't read the report, assume all files are missing
                 missing_files = job_ids
         else:
-            print("No download report found, assuming all files are missing")
-            missing_files = job_ids
+            print("No download report found, checking files directly in jobs directory")
+            # Check files directly in the jobs directory
+            try:
+                for job_id in job_ids:
+                    # Look for job description files (containing job ID but not notes)
+                    job_desc_files = [f for f in os.listdir(latest_jobs_folder) 
+                                    if f.startswith(job_id) and 'notes' not in f.lower()]
+                    # Look for notes files
+                    notes_files = [f for f in os.listdir(latest_jobs_folder) 
+                                 if f.startswith(job_id) and 'notes' in f.lower()]
+                    
+                    if job_desc_files:
+                        # Has job description file
+                        available_files[job_id] = {
+                            'regular_file': job_desc_files[0],
+                            'notes_file': notes_files[0] if notes_files else ''
+                        }
+                    elif notes_files:
+                        # Has only notes file
+                        available_files[job_id] = {
+                            'regular_file': '',
+                            'notes_file': notes_files[0]
+                        }
+                    else:
+                        # No files found
+                        missing_files.append(job_id)
+                        
+                print(f"Direct file check found {len(available_files)} jobs with files, {len(missing_files)} jobs missing files")
+            except Exception as e:
+                print(f"Error checking files directly: {e}")
+                print("Assuming all files are missing")
+                missing_files = job_ids
         
-        # Separate jobs into those with files and those without
-        jobs_with_files = [job_id for job_id in job_ids if job_id in available_files]
-        jobs_without_files = [job_id for job_id in job_ids if job_id not in available_files]
+        # Separate jobs into categories based on available files
+        jobs_with_job_descriptions = []  # Jobs that can be fully processed
+        jobs_with_notes_only = []        # Jobs with only notes files
+        jobs_without_files = []          # Jobs with no files at all
         
-        print(f"Jobs with files: {jobs_with_files}")
+        for job_id in job_ids:
+            if job_id in available_files:
+                file_info = available_files[job_id]
+                # Handle pandas nan values that become "nan" strings
+                regular_file_raw = file_info.get('regular_file', '')
+                notes_file_raw = file_info.get('notes_file', '')
+                
+                has_regular_file = str(regular_file_raw).strip() if regular_file_raw and str(regular_file_raw).lower() != 'nan' else ''
+                has_notes_file = str(notes_file_raw).strip() if notes_file_raw and str(notes_file_raw).lower() != 'nan' else ''
+                
+                if has_regular_file:
+                    # Has job description file - can be fully processed
+                    jobs_with_job_descriptions.append(job_id)
+                elif has_notes_file:
+                    # Has only notes file - notes-only processing
+                    jobs_with_notes_only.append(job_id)
+                else:
+                    # No files despite being in available_files
+                    jobs_without_files.append(job_id)
+            else:
+                # No files at all
+                jobs_without_files.append(job_id)
+        
+        # For backward compatibility, jobs_with_files = jobs that can be fully processed
+        jobs_with_files = jobs_with_job_descriptions
+        
+        print(f"Jobs with job descriptions: {jobs_with_job_descriptions}")
+        print(f"Jobs with notes only: {jobs_with_notes_only}")
         print(f"Jobs without files: {jobs_without_files}")
         
         # Initialize progress tracking
@@ -6336,40 +6395,46 @@ async def process_jobs(
                     cache_dir="/app/data/cache"
                 )
                 
-                # Cache rate monitoring - check if job description cache rate is above 75%
+                # Cache rate monitoring - check existing job cache rate (excluding new jobs)
                 from modules.smart_cache_manager import SmartCacheManager
                 cache_manager = SmartCacheManager()
                 cache_stats = cache_manager.get_cache_statistics()
                 
-                job_desc_hits = cache_stats['statistics']['job_desc_cache_hits']
-                job_desc_misses = cache_stats['statistics']['job_desc_cache_misses']
-                total_job_desc_requests = job_desc_hits + job_desc_misses
+                # Get existing job cache statistics (excluding new job IDs)
+                existing_job_hits = cache_stats['statistics'].get('existing_job_desc_cache_hits', 0)
+                existing_job_misses = cache_stats['statistics'].get('existing_job_desc_cache_misses', 0)
+                existing_job_requests = existing_job_hits + existing_job_misses
+                new_job_ids_processed = cache_stats['statistics'].get('new_job_ids_processed', 0)
                 
-                if total_job_desc_requests > 0:
-                    job_desc_hit_rate = (job_desc_hits / total_job_desc_requests) * 100
-                    print(f"🔍 Job Description Cache Rate: {job_desc_hit_rate:.1f}%")
+                if existing_job_requests > 0:
+                    existing_job_hit_rate = (existing_job_hits / existing_job_requests) * 100
+                    print(f"🔍 Existing Job Cache Rate: {existing_job_hit_rate:.1f}% (excluding {new_job_ids_processed} new jobs)")
                     
-                    if job_desc_hit_rate < 50.0:
-                        print(f"🚨 ALERT: Job description cache rate ({job_desc_hit_rate:.1f}%) is below 50% threshold!")
-                        print(f"🛑 STOPPING PROCESSING: Cache rate too low!")
+                    # Check existing job cache rate with higher threshold (should be very high for existing jobs)
+                    if existing_job_hit_rate < 80.0:  # Higher threshold for existing jobs
+                        print(f"🚨 ALERT: Existing job cache rate ({existing_job_hit_rate:.1f}%) is below 80% threshold!")
+                        print(f"🛑 STOPPING PROCESSING: Existing jobs should have very high cache hit rates!")
                         
                         # Update progress to show error
                         job_processing_progress[session_id].update({
                             "status": "failed",
-                            "current_step": f"STOPPED: Cache rate ({job_desc_hit_rate:.1f}%) below 50% threshold",
-                            "error": f"Cache rate {job_desc_hit_rate:.1f}% is below 50% threshold. Please investigate cache issues."
+                            "current_step": f"STOPPED: Existing job cache rate ({existing_job_hit_rate:.1f}%) below 80% threshold",
+                            "error": f"Existing job cache rate {existing_job_hit_rate:.1f}% is below 80% threshold. This indicates cache corruption or file changes."
                         })
                         
                         return {
-                            "message": f"Processing stopped: Job description cache rate ({job_desc_hit_rate:.1f}%) is below 50% threshold",
+                            "message": f"Processing stopped: Existing job cache rate ({existing_job_hit_rate:.1f}%) is below 80% threshold",
                             "session_id": session_id,
                             "status": "stopped",
-                            "cache_rate": job_desc_hit_rate,
-                            "threshold": 50.0,
-                            "error": "Cache rate too low"
+                            "existing_job_cache_rate": existing_job_hit_rate,
+                            "threshold": 80.0,
+                            "new_job_ids_processed": new_job_ids_processed,
+                            "error": "Existing job cache rate too low"
                         }
+                    else:
+                        print(f"✅ Existing job cache rate ({existing_job_hit_rate:.1f}%) is healthy - proceeding with processing")
                 else:
-                    print(f"ℹ️  No job description cache requests yet - proceeding with processing")
+                    print(f"ℹ️  No existing job cache requests yet - proceeding with processing")
                 
                 # Start processing in a separate thread to allow progress updates
                 import threading
@@ -6505,8 +6570,37 @@ async def process_jobs(
             except Exception as e:
                 print(f"Error processing MTB-only jobs: {e}")
         
-        # Combine all processed jobs
-        all_processed_jobs = ai_processed_jobs + mtb_only_jobs
+        # Process jobs with notes only
+        notes_only_jobs = []
+        if jobs_with_notes_only:
+            print(f"Processing {len(jobs_with_notes_only)} jobs with notes only...")
+            try:
+                import pandas as pd
+                mtb_df = pd.read_csv(csv_path, dtype=str)
+                
+                for job_id in jobs_with_notes_only:
+                    # Find job in MTB
+                    job_row = mtb_df[mtb_df['JobID'] == job_id]
+                    if not job_row.empty:
+                        job_data = job_row.iloc[0].to_dict()
+                        
+                        # Create job record with MTB data using conversion function
+                        notes_job = convert_mtb_only_to_db_format(job_data)
+                        notes_job['jobid'] = job_id  # Ensure jobid is set
+                        notes_only_jobs.append(notes_job)
+                        print(f"Created notes-only record for job {job_id}")
+                    else:
+                        print(f"Job {job_id} not found in MasterTrackingBoard.csv")
+                        
+            except Exception as e:
+                print(f"Error processing notes-only jobs: {e}")
+        
+        # Separate fully processed jobs from notes-only jobs
+        fully_processed_jobs = ai_processed_jobs  # Jobs with complete job descriptions
+        all_notes_only_jobs = notes_only_jobs + mtb_only_jobs  # All jobs with only notes/MTB data
+        
+        # Combine all processed jobs for final output
+        all_processed_jobs = fully_processed_jobs + all_notes_only_jobs
         
         # Run Final Optimization step for field corrections
         final_output_file = None
@@ -6688,11 +6782,12 @@ async def process_jobs(
             "download_link": download_link,
             "json_output_directory": "/app/data/json_output",
             "job_count": len(job_ids),
-            "ai_processed_count": len(ai_processed_jobs),
-            "mtb_only_count": len(mtb_only_jobs),
+            "ai_processed_count": len(fully_processed_jobs),
+            "mtb_only_count": len(all_notes_only_jobs),
             "ai_agent": ai_agent,
             "model": model,
-            "data": cleaned_result_data,
+            "data": clean_for_json(fully_processed_jobs),  # Only fully processed jobs
+            "notes_only_data": clean_for_json(all_notes_only_jobs),  # Notes-only jobs separately
             "session_id": processing_session.id,
             "optimization_status": "completed" if final_output_file else "skipped",
             "token_statistics": token_stats,
@@ -6700,8 +6795,10 @@ async def process_jobs(
                 "total_jobs": len(job_ids),
                 "jobs_with_files": len(jobs_with_files),
                 "jobs_without_files": len(jobs_without_files),
-                "ai_processed": len(ai_processed_jobs),
-                "mtb_only": len(mtb_only_jobs),
+                "fully_processed": len(fully_processed_jobs),
+                "notes_only": len(all_notes_only_jobs),
+                "ai_processed": len(fully_processed_jobs),  # For backward compatibility
+                "mtb_only": len(all_notes_only_jobs),  # For backward compatibility
                 "cache_hits": token_stats.get("cache_hits", 0),
                 "cache_misses": token_stats.get("cache_misses", 0),
                 "cache_hit_rate": token_stats.get("cache_hit_rate", "0%"),
@@ -6711,7 +6808,9 @@ async def process_jobs(
                 "cost_per_job": token_stats.get("cost_per_job", 0),
                 "total_cost_saved": token_stats.get("total_cost_saved", 0),
                 "money_saved": token_stats.get("money_saved", "$0.00")
-            }
+            },
+            "missing_jobs": jobs_without_files,
+            "skipped_jobs": []
         }
                 
     except Exception as e:
@@ -7113,9 +7212,6 @@ async def select_ai_agent(agent: str = Form(...), model: str = Form(None)):
         if agent.lower() not in available_agents:
             raise HTTPException(status_code=400, detail=f"Invalid agent. Available: {available_agents}")
         
-        # Update the default AI agent in config
-        config.DEFAULT_AI_AGENT = agent.lower()
-        
         # Save to environment variable for persistence
         import os
         os.environ['DEFAULT_AI_AGENT'] = agent.lower()
@@ -7127,11 +7223,36 @@ async def select_ai_agent(agent: str = Form(...), model: str = Form(None)):
         
         # Also save to a persistent config file
         try:
-            config_file_path = "config_ai_agent.txt"
-            with open(config_file_path, 'w') as f:
-                f.write(f"{agent.lower()}|{model or ''}")
+            import os
+            # Try multiple possible paths for the config file
+            config_paths = [
+                "config_ai_agent.txt",
+                "../config_ai_agent.txt", 
+                "../../config_ai_agent.txt",
+                "/app/config_ai_agent.txt",
+                "/home/leemax/projects/NewCompleteWorking/config_ai_agent.txt"
+            ]
+            
+            config_file_written = False
+            for config_file_path in config_paths:
+                try:
+                    with open(config_file_path, 'w') as f:
+                        f.write(f"{agent.lower()}|{model or ''}")
+                    print(f"Successfully wrote config to: {config_file_path}")
+                    config_file_written = True
+                    break
+                except Exception as path_error:
+                    print(f"Failed to write to {config_file_path}: {path_error}")
+                    continue
+            
+            if not config_file_written:
+                print(f"Warning: Could not write to any config file path")
         except Exception as e:
             print(f"Warning: Could not save AI agent to file: {e}")
+        
+        # Reload the config module to pick up changes
+        import importlib
+        importlib.reload(config)
         
         return {
             "status": "success",
@@ -7476,17 +7597,37 @@ async def reset_auth():
 
 @app.get("/api/ai-agents")
 async def get_ai_agents():
-    """Get available AI agents"""
+    """Get available AI agents and current configuration"""
     try:
         if not config:
             return {
                 "available_agents": ["grok", "gemini", "deepseek", "openai", "qwen", "zai"],
-                "current_agent": "grok"
+                "current_agent": "grok",
+                "current_model": "default"
             }
+        
+        current_agent = getattr(config, 'DEFAULT_AI_AGENT', 'openai')
+        current_model = "default"
+        
+        # Get the actual model being used
+        import os
+        if current_agent == "openai":
+            current_model = os.getenv("OPENAI_MODEL", config.OPENAI_MODEL)
+        elif current_agent == "grok":
+            current_model = os.getenv("GROK_MODEL", config.GROK_MODEL)
+        elif current_agent == "gemini":
+            current_model = os.getenv("GEMINI_MODEL", config.GEMINI_MODEL)
+        elif current_agent == "deepseek":
+            current_model = os.getenv("DEEPSEEK_MODEL", config.DEEPSEEK_MODEL)
+        elif current_agent == "qwen":
+            current_model = os.getenv("QWEN_MODEL", config.QWEN_MODEL)
+        elif current_agent == "zai":
+            current_model = os.getenv("ZAI_MODEL", config.ZAI_MODEL)
         
         return {
             "available_agents": ["grok", "gemini", "deepseek", "openai", "qwen", "zai"],
-            "current_agent": getattr(config, 'DEFAULT_AI_AGENT', 'openai')
+            "current_agent": current_agent,
+            "current_model": current_model
         }
         
     except Exception as e:
@@ -9034,6 +9175,370 @@ async def update_job_status(update: JobStatusUpdate):
             session.close()
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to update job status: {str(e)}")
+
+# ===== CANDIDATES DATABASE API ENDPOINTS =====
+
+# Database connection for candidates
+def get_candidates_db_engine():
+    """Get database engine for candidates database"""
+    # Try multiple possible paths for the database
+    possible_paths = [
+        Path(__file__).parent.parent.parent / "candidates_database.db",  # Original path
+        Path("/app/candidates_database.db"),  # Docker container path
+        Path(__file__).parent.parent / "candidates_database.db",  # Alternative path
+        Path("candidates_database.db"),  # Current directory
+    ]
+    
+    db_path = None
+    for path in possible_paths:
+        if path.exists():
+            db_path = path
+            break
+    
+    if not db_path:
+        raise HTTPException(status_code=404, detail=f"Candidates database not found. Checked paths: {[str(p) for p in possible_paths]}")
+    
+    engine = create_engine(f"sqlite:///{db_path}")
+    return engine
+
+@app.get("/api/candidates/search")
+async def search_candidates(
+    search: Optional[str] = Query(None, description="Search by name, email, or position"),
+    status: Optional[str] = Query(None, description="Filter by candidate status (C, P)"),
+    recruiter: Optional[str] = Query(None, description="Filter by recruiter name"),
+    min_salary: Optional[float] = Query(None, description="Minimum salary filter"),
+    max_salary: Optional[float] = Query(None, description="Maximum salary filter"),
+    relocate: Optional[str] = Query(None, description="Filter by relocation preference"),
+    sort_by: str = Query("last_name", description="Sort field"),
+    limit: int = Query(100, description="Maximum number of results"),
+    offset: int = Query(0, description="Number of results to skip")
+):
+    """Search candidates with various filters"""
+    try:
+        engine = get_candidates_db_engine()
+        
+        # Build the base query
+        base_query = "SELECT * FROM candidates WHERE 1=1"
+        count_query = "SELECT COUNT(*) as total FROM candidates WHERE 1=1"
+        params = []
+        
+        # Add search conditions
+        if search:
+            search_condition = """
+                (first_name LIKE :search OR 
+                 last_name LIKE :search OR 
+                 email_address LIKE :search OR 
+                 last_pos_with_interview LIKE :search OR
+                 notes LIKE :search)
+            """
+            base_query += f" AND {search_condition}"
+            count_query += f" AND {search_condition}"
+        
+        if status:
+            base_query += " AND candidate_status = :status"
+            count_query += " AND candidate_status = :status"
+        
+        if recruiter:
+            base_query += " AND recruiter LIKE :recruiter"
+            count_query += " AND recruiter LIKE :recruiter"
+        
+        if min_salary is not None:
+            base_query += " AND current_salary >= :min_salary"
+            count_query += " AND current_salary >= :min_salary"
+        
+        if max_salary is not None:
+            base_query += " AND current_salary <= :max_salary"
+            count_query += " AND current_salary <= :max_salary"
+        
+        if relocate:
+            base_query += " AND relocate LIKE :relocate"
+            count_query += " AND relocate LIKE :relocate"
+        
+        # Add sorting
+        valid_sort_fields = [
+            "last_name", "first_name", "email_address", "current_salary", 
+            "desired_salary", "date_entered", "recruiter", "candidate_status"
+        ]
+        if sort_by in valid_sort_fields:
+            base_query += f" ORDER BY {sort_by}"
+            if sort_by in ["current_salary", "desired_salary", "date_entered"]:
+                base_query += " DESC"
+        else:
+            base_query += " ORDER BY last_name"
+        
+        # Add pagination
+        base_query += f" LIMIT {limit} OFFSET {offset}"
+        
+        # Build parameters dictionary
+        query_params = {}
+        if search:
+            query_params['search'] = f"%{search}%"
+        if status:
+            query_params['status'] = status
+        if recruiter:
+            query_params['recruiter'] = f"%{recruiter}%"
+        if min_salary is not None:
+            query_params['min_salary'] = min_salary
+        if max_salary is not None:
+            query_params['max_salary'] = max_salary
+        if relocate:
+            query_params['relocate'] = f"%{relocate}%"
+        
+        # Execute queries
+        with engine.connect() as conn:
+            # Get total count
+            count_result = conn.execute(text(count_query), query_params)
+            total = count_result.fetchone()[0]
+            
+            # Get candidates
+            candidates_result = conn.execute(text(base_query), query_params)
+            candidates_data = candidates_result.fetchall()
+            
+            # Convert to list of dictionaries
+            candidates = []
+            for row in candidates_data:
+                candidate_dict = dict(row._mapping)
+                # Convert None values to None for JSON serialization
+                for key, value in candidate_dict.items():
+                    if value is None or (isinstance(value, float) and pd.isna(value)):
+                        candidate_dict[key] = None
+                candidates.append(candidate_dict)
+        
+        return {
+            "candidates": candidates,
+            "total": total,
+            "limit": limit,
+            "offset": offset
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error searching candidates: {str(e)}")
+
+@app.get("/api/candidates/field-search")
+async def search_candidates_by_field(
+    field: str = Query(..., description="Field to search in"),
+    value: str = Query(..., description="Value to search for"),
+    sort_by: str = Query("last_name", description="Sort field"),
+    limit: int = Query(100, description="Maximum number of results"),
+    offset: int = Query(0, description="Number of results to skip")
+):
+    """Search candidates in a specific field only"""
+    try:
+        engine = get_candidates_db_engine()
+        
+        # Validate field name to prevent SQL injection
+        valid_fields = [
+            "first_name", "last_name", "email_address", "cell_phone", "city_state",
+            "last_pos_with_interview", "degree", "notes", "social_linkedin", "recruiter",
+            "candidate_status", "relocate", "visa_info", "current_salary", "desired_salary"
+        ]
+        
+        if field not in valid_fields:
+            raise HTTPException(status_code=400, detail=f"Invalid field name. Allowed fields: {', '.join(valid_fields)}")
+        
+        # Build the query for specific field search
+        base_query = f"SELECT * FROM candidates WHERE {field} LIKE :search_value"
+        count_query = f"SELECT COUNT(*) as total FROM candidates WHERE {field} LIKE :search_value"
+        
+        # Add sorting
+        valid_sort_fields = [
+            "last_name", "first_name", "email_address", "current_salary", 
+            "desired_salary", "date_entered", "recruiter", "candidate_status"
+        ]
+        if sort_by in valid_sort_fields:
+            base_query += f" ORDER BY {sort_by}"
+            if sort_by in ["current_salary", "desired_salary", "date_entered"]:
+                base_query += " DESC"
+        else:
+            base_query += " ORDER BY last_name"
+        
+        # Add pagination
+        base_query += f" LIMIT {limit} OFFSET {offset}"
+        
+        # Build parameters dictionary
+        query_params = {'search_value': f"%{value}%"}
+        
+        # Execute queries
+        with engine.connect() as conn:
+            # Get total count
+            count_result = conn.execute(text(count_query), query_params)
+            total = count_result.fetchone()[0]
+            
+            # Get candidates
+            candidates_result = conn.execute(text(base_query), query_params)
+            candidates_data = candidates_result.fetchall()
+            
+            # Convert to list of dictionaries
+            candidates = []
+            for row in candidates_data:
+                candidate_dict = dict(row._mapping)
+                # Convert None values to None for JSON serialization
+                for key, value in candidate_dict.items():
+                    if value is None or (isinstance(value, float) and pd.isna(value)):
+                        candidate_dict[key] = None
+                candidates.append(candidate_dict)
+        
+        return {
+            "candidates": candidates,
+            "total": total,
+            "limit": limit,
+            "offset": offset,
+            "searched_field": field,
+            "search_value": value
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error searching candidates by field: {str(e)}")
+
+@app.get("/api/candidates/recruiters")
+async def get_recruiters():
+    """Get list of unique recruiters"""
+    try:
+        engine = get_candidates_db_engine()
+        
+        query = """
+        SELECT DISTINCT recruiter, COUNT(*) as candidate_count
+        FROM candidates 
+        WHERE recruiter IS NOT NULL AND recruiter != ''
+        GROUP BY recruiter 
+        ORDER BY candidate_count DESC, recruiter
+        """
+        
+        with engine.connect() as conn:
+            result = conn.execute(text(query))
+            recruiters_data = result.fetchall()
+            
+            recruiters = [row[0] for row in recruiters_data if row[0]]
+        
+        return recruiters
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching recruiters: {str(e)}")
+
+@app.get("/api/candidates/stats")
+async def get_candidates_stats():
+    """Get summary statistics about candidates"""
+    try:
+        engine = get_candidates_db_engine()
+        
+        queries = {
+            "total_candidates": "SELECT COUNT(*) FROM candidates",
+            "unique_emails": "SELECT COUNT(DISTINCT email_address) FROM candidates WHERE email_address IS NOT NULL",
+            "unique_recruiters": "SELECT COUNT(DISTINCT recruiter) FROM candidates WHERE recruiter IS NOT NULL",
+            "status_distribution": """
+                SELECT candidate_status, COUNT(*) as count 
+                FROM candidates 
+                GROUP BY candidate_status 
+                ORDER BY count DESC
+            """,
+            "salary_stats": """
+                SELECT 
+                    MIN(current_salary) as min_salary,
+                    MAX(current_salary) as max_salary,
+                    AVG(current_salary) as avg_salary,
+                    COUNT(CASE WHEN current_salary IS NOT NULL THEN 1 END) as with_salary
+                FROM candidates 
+                WHERE current_salary IS NOT NULL
+            """,
+            "top_recruiters": """
+                SELECT recruiter, COUNT(*) as candidate_count
+                FROM candidates 
+                WHERE recruiter IS NOT NULL 
+                GROUP BY recruiter 
+                ORDER BY candidate_count DESC 
+                LIMIT 10
+            """
+        }
+        
+        stats = {}
+        
+        with engine.connect() as conn:
+            # Basic counts
+            for key, query in queries.items():
+                if key in ["total_candidates", "unique_emails", "unique_recruiters"]:
+                    result = conn.execute(text(query))
+                    stats[key] = result.fetchone()[0]
+                elif key in ["status_distribution", "top_recruiters"]:
+                    result = conn.execute(text(query))
+                    stats[key] = [dict(row._mapping) for row in result.fetchall()]
+                elif key == "salary_stats":
+                    result = conn.execute(text(query))
+                    row = result.fetchone()
+                    if row:
+                        stats[key] = {
+                            "min_salary": row[0],
+                            "max_salary": row[1],
+                            "avg_salary": row[2],
+                            "with_salary": row[3]
+                        }
+                    else:
+                        stats[key] = {
+                            "min_salary": None,
+                            "max_salary": None,
+                            "avg_salary": None,
+                            "with_salary": 0
+                        }
+        
+        return stats
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching statistics: {str(e)}")
+
+@app.get("/api/candidates/duplicates")
+async def get_duplicate_emails():
+    """Find duplicate email addresses"""
+    try:
+        engine = get_candidates_db_engine()
+        
+        query = """
+        SELECT 
+            email_address, 
+            COUNT(*) as count,
+            GROUP_CONCAT(first_name || ' ' || last_name) as names
+        FROM candidates 
+        WHERE email_address IS NOT NULL 
+        GROUP BY email_address 
+        HAVING COUNT(*) > 1 
+        ORDER BY count DESC
+        """
+        
+        with engine.connect() as conn:
+            result = conn.execute(text(query))
+            duplicates = [dict(row._mapping) for row in result.fetchall()]
+        
+        return duplicates
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error finding duplicates: {str(e)}")
+
+@app.get("/api/candidates/{candidate_id}")
+async def get_candidate(candidate_id: int):
+    """Get a specific candidate by ID"""
+    try:
+        engine = get_candidates_db_engine()
+        
+        query = "SELECT * FROM candidates WHERE id = ?"
+        
+        with engine.connect() as conn:
+            result = conn.execute(text(query), [candidate_id])
+            candidate_data = result.fetchone()
+            
+            if not candidate_data:
+                raise HTTPException(status_code=404, detail="Candidate not found")
+            
+            candidate_dict = dict(candidate_data._mapping)
+            
+            # Convert None values for JSON serialization
+            for key, value in candidate_dict.items():
+                if value is None or (isinstance(value, float) and pd.isna(value)):
+                    candidate_dict[key] = None
+            
+            return candidate_dict
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching candidate: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn

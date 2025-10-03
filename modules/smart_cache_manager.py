@@ -53,6 +53,10 @@ class SmartCacheManager:
         
         # Load existing statistics
         self.stats = self._load_statistics()
+        
+        # Track job IDs that have been seen before (for existing job cache rate calculation)
+        self.existing_job_ids = set()
+        self._load_existing_job_ids()
     
     def _load_all_caches(self) -> Dict[str, Dict]:
         """Load all cache files"""
@@ -71,10 +75,17 @@ class SmartCacheManager:
                 
                 # Handle both old format (raw stats) and new format (comprehensive stats)
                 if "total_cache_hits" in loaded_stats:
-                    # New format - return as is
+                    # New format - ensure new fields exist
+                    if "existing_job_desc_cache_hits" not in loaded_stats:
+                        loaded_stats["existing_job_desc_cache_hits"] = 0
+                        loaded_stats["existing_job_desc_cache_misses"] = 0
+                        loaded_stats["new_job_ids_processed"] = 0
                     return loaded_stats
                 else:
-                    # Old format - return raw stats only
+                    # Old format - add new fields
+                    loaded_stats["existing_job_desc_cache_hits"] = 0
+                    loaded_stats["existing_job_desc_cache_misses"] = 0
+                    loaded_stats["new_job_ids_processed"] = 0
                     return loaded_stats
             except Exception as e:
                 print(f"Error loading statistics file {stats_file}: {e}")
@@ -83,6 +94,9 @@ class SmartCacheManager:
         return {
             "job_desc_cache_hits": 0,
             "job_desc_cache_misses": 0,
+            "existing_job_desc_cache_hits": 0,
+            "existing_job_desc_cache_misses": 0,
+            "new_job_ids_processed": 0,
             "notes_cache_hits": 0,
             "notes_cache_misses": 0,
             "combined_cache_hits": 0,
@@ -120,6 +134,16 @@ class SmartCacheManager:
                 json.dump(comprehensive_stats, f, indent=2)
         except Exception as e:
             print(f"Error saving statistics file {stats_file}: {e}")
+    
+    def _load_existing_job_ids(self):
+        """Load job IDs that have been seen before from cache files"""
+        for cache_type, cache_data in self.caches.items():
+            for cache_key in cache_data.keys():
+                # Extract job ID from cache key (format: job_id_hash)
+                job_id = cache_key.split('_')[0]
+                self.existing_job_ids.add(job_id)
+        
+        print(f"Loaded {len(self.existing_job_ids)} existing job IDs from cache")
     
     def _load_cache_file(self, cache_file: Path) -> Dict:
         """Load a single cache file"""
@@ -220,19 +244,35 @@ class SmartCacheManager:
     
     def get_job_description_cache(self, job_id: str, job_file: str) -> Optional[Dict]:
         """Get cached job description analysis"""
+        # Check if this is an existing job ID
+        is_existing_job = job_id in self.existing_job_ids
+        
         # Try flexible cache key first
         cache_key = self._get_flexible_cache_key(job_id, job_file)
         cache_entry = self.caches["job_description"].get(cache_key)
         
         if self._is_cache_entry_valid(cache_entry, "job_description"):
+            # Cache hit - increment appropriate counters
             self.stats["job_desc_cache_hits"] += 1
+            if is_existing_job:
+                self.stats["existing_job_desc_cache_hits"] += 1
+            
             self.stats["ai_calls_saved"] += 1
             self.stats["tokens_saved"] += cache_entry.get("estimated_tokens", 0)
             self._save_statistics()
             print(f"[CACHE HIT] Job description for {job_id} - using cached result")
             return cache_entry.get("data")
         
+        # Cache miss - increment appropriate counters
         self.stats["job_desc_cache_misses"] += 1
+        if is_existing_job:
+            self.stats["existing_job_desc_cache_misses"] += 1
+        else:
+            # This is a new job ID
+            self.stats["new_job_ids_processed"] += 1
+            # Add to existing job IDs set for future reference
+            self.existing_job_ids.add(job_id)
+        
         self._save_statistics()
         return None
     
@@ -418,7 +458,19 @@ class SmartCacheManager:
         
         # Check if we already have comprehensive statistics
         if "total_cache_hits" in self.stats:
-            # Statistics are already comprehensive
+            # Statistics are already comprehensive, but ensure new fields exist
+            if "existing_job_cache_hit_rate" not in self.stats:
+                # Calculate existing job cache rate (excluding new job IDs)
+                existing_job_hits = self.stats.get("existing_job_desc_cache_hits", 0)
+                existing_job_misses = self.stats.get("existing_job_desc_cache_misses", 0)
+                existing_job_requests = existing_job_hits + existing_job_misses
+                existing_job_hit_rate = (existing_job_hits / existing_job_requests * 100) if existing_job_requests > 0 else 0
+                
+                # Add missing fields
+                self.stats["existing_job_desc_requests"] = existing_job_requests
+                self.stats["existing_job_cache_hit_rate"] = f"{existing_job_hit_rate:.1f}%"
+                self.stats["new_job_ids_processed"] = self.stats.get("new_job_ids_processed", 0)
+            
             return {
                 "cache_policies": self.cache_policies,
                 "statistics": self.stats,
@@ -441,6 +493,15 @@ class SmartCacheManager:
         total_requests = total_hits + total_misses
         hit_rate = (total_hits / total_requests * 100) if total_requests > 0 else 0
         
+        # Calculate existing job cache rate (excluding new job IDs)
+        existing_job_hits = self.stats.get("existing_job_desc_cache_hits", 0)
+        existing_job_misses = self.stats.get("existing_job_desc_cache_misses", 0)
+        existing_job_requests = existing_job_hits + existing_job_misses
+        existing_job_hit_rate = (existing_job_hits / existing_job_requests * 100) if existing_job_requests > 0 else 0
+        
+        # Get count of new job IDs processed
+        new_job_ids_processed = self.stats.get("new_job_ids_processed", 0)
+        
         return {
             "cache_policies": self.cache_policies,
             "statistics": {
@@ -448,7 +509,12 @@ class SmartCacheManager:
                 "total_cache_hits": total_hits,
                 "total_cache_misses": total_misses,
                 "total_requests": total_requests,
-                "cache_hit_rate": f"{hit_rate:.1f}%"
+                "cache_hit_rate": f"{hit_rate:.1f}%",
+                "existing_job_desc_cache_hits": existing_job_hits,
+                "existing_job_desc_cache_misses": existing_job_misses,
+                "existing_job_desc_requests": existing_job_requests,
+                "existing_job_cache_hit_rate": f"{existing_job_hit_rate:.1f}%",
+                "new_job_ids_processed": new_job_ids_processed
             },
             "cache_sizes": {
                 "job_description": len(self.caches["job_description"]),
@@ -463,9 +529,22 @@ class SmartCacheManager:
         
         print(f"\n🚀 SMART CACHE STATISTICS:")
         print(f"📊 Total Requests: {stats['statistics']['total_requests']}")
-        print(f"🎯 Cache Hit Rate: {stats['statistics']['cache_hit_rate']}")
+        print(f"🎯 Overall Cache Hit Rate: {stats['statistics']['cache_hit_rate']}")
         print(f"🤖 AI Calls Saved: {stats['statistics']['ai_calls_saved']}")
         print(f"💰 Tokens Saved: {stats['statistics']['tokens_saved']:,}")
+        
+        print(f"\n🔍 EXISTING JOB ANALYSIS (Excluding New Jobs):")
+        existing_requests = stats['statistics']['existing_job_desc_requests']
+        if existing_requests > 0:
+            print(f"   📈 Existing Job Cache Hit Rate: {stats['statistics']['existing_job_cache_hit_rate']}")
+            print(f"   📊 Existing Job Requests: {existing_requests}")
+            print(f"   ✅ Existing Job Hits: {stats['statistics']['existing_job_desc_cache_hits']}")
+            print(f"   ❌ Existing Job Misses: {stats['statistics']['existing_job_desc_cache_misses']}")
+        else:
+            print(f"   ℹ️  No existing job requests yet")
+        
+        print(f"\n🆕 NEW JOB PROCESSING:")
+        print(f"   📝 New Job IDs Processed: {stats['statistics']['new_job_ids_processed']}")
         
         print(f"\n📋 Component Breakdown:")
         print(f"   Job Description: {stats['statistics']['job_desc_cache_hits']} hits, {stats['statistics']['job_desc_cache_misses']} misses")
